@@ -1,0 +1,108 @@
+package nt.testingtool.istqb.Utils;
+
+import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.SnapshotParameters;
+import javafx.scene.image.WritableImage;
+import javafx.scene.layout.VBox;
+import org.apache.commons.imaging.ImageReadException;
+import org.apache.commons.imaging.ImageWriteException;
+import org.apache.commons.imaging.Imaging;
+import org.apache.commons.imaging.common.ImageMetadata;
+import org.apache.commons.imaging.formats.jpeg.JpegImageMetadata;
+import org.apache.commons.imaging.formats.jpeg.exif.ExifRewriter;
+import org.apache.commons.imaging.formats.tiff.TiffField;
+import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
+import org.apache.commons.imaging.formats.tiff.constants.MicrosoftTagConstants;
+import org.apache.commons.imaging.formats.tiff.taginfos.TagInfo;
+import org.apache.commons.imaging.formats.tiff.taginfos.TagInfoXpString;
+import org.apache.commons.imaging.formats.tiff.write.TiffOutputDirectory;
+import org.apache.commons.imaging.formats.tiff.write.TiffOutputSet;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static nt.testingtool.istqb.Utils.ProjectConfiguration.getCurrentPath;
+
+public class ImageCaptureHandler {
+    public static void convertPNGImageToJPG(String imageName) {
+        try {
+            File imageToBeConvert = new File(getCurrentPath() + File.separator + imageName + ".png");
+            BufferedImage input = ImageIO.read(imageToBeConvert);
+            System.out.println("input image type=" + input.getType());
+            int width = input.getWidth();
+            int height = input.getHeight();
+            BufferedImage output = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+            int px[] = new int[width * height];
+            input.getRGB(0, 0, width, height, px, 0, width);
+            output.setRGB(0, 0, width, height, px, 0, width);
+            ImageIO.write(output, "jpg", new File(getCurrentPath() + File.separator + imageName + ".jpg"));
+            imageToBeConvert.delete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void captureAndSaveImageInContainer(VBox certificateVbox, String imageName) {
+        SnapshotParameters snapshotParameters = new SnapshotParameters();
+        WritableImage writableImage = new WritableImage((int) certificateVbox.getWidth(), (int) certificateVbox.getHeight());
+        writableImage = certificateVbox.snapshot(snapshotParameters, writableImage);
+        try {
+            ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null),
+                    "png", new File(getCurrentPath() + File.separator + imageName + ".png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static String readTitleInMetadataOfJpgImage(final File jpegImageFile) throws IOException, ImageReadException {
+        // note that metadata might be null if no metadata is found.
+        final ImageMetadata metadata = Imaging.getMetadata(jpegImageFile);
+        final JpegImageMetadata jpegMetadata = (JpegImageMetadata) metadata;
+        List<TiffField> imageTiffFields = jpegMetadata.getExif().getAllFields();
+        Optional<TiffField> imageTitle = imageTiffFields.stream()
+                .filter(tiffField -> tiffField.getTagName().matches("XPTitle"))
+                .findFirst();
+        System.out.println(imageTitle.get().getValue().toString());
+        return imageTitle.get().getValue().toString();
+    }
+
+    public static boolean updateWindowsFields(final File jpegImageFile, final File dst, String titleValue)
+            throws IOException, ImageReadException, ImageWriteException {
+
+        try (FileOutputStream fos = new FileOutputStream(dst);
+             OutputStream os = new BufferedOutputStream(fos)) {
+            TiffOutputSet outputSet = null;
+            // note that metadata might be null if no metadata is found.
+            final ImageMetadata metadata = Imaging.getMetadata(jpegImageFile);
+            final JpegImageMetadata jpegMetadata = (JpegImageMetadata) metadata;
+            if (null != jpegMetadata) {
+                // note that exif might be null if no Exif metadata is found.
+                final TiffImageMetadata exif = jpegMetadata.getExif();
+                if (null != exif) {
+                    outputSet = exif.getOutputSet();
+                }
+            }
+            // if file does not contain any exif metadata, we create an empty
+            // set of exif metadata. Otherwise, we keep all of the other
+            // existing tags.
+            if (null == outputSet) {
+                outputSet = new TiffOutputSet();
+            }
+
+            final TiffOutputDirectory rootDir = outputSet.getOrCreateRootDirectory();
+            rootDir.removeField(MicrosoftTagConstants.EXIF_TAG_XPTITLE);
+            rootDir.add(MicrosoftTagConstants.EXIF_TAG_XPTITLE, titleValue);
+
+            new ExifRewriter().updateExifMetadataLossless(jpegImageFile, os,
+                    outputSet);
+            jpegImageFile.delete();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+}
