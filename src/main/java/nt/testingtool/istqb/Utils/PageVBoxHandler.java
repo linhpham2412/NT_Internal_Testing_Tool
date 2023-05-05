@@ -1,15 +1,15 @@
 package nt.testingtool.istqb.Utils;
 
-import com.drew.imaging.ImageProcessingException;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
+import javafx.geometry.NodeOrientation;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -17,6 +17,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.ImageWriteException;
@@ -35,15 +36,17 @@ import java.util.stream.Collectors;
 import static nt.testingtool.istqb.Utils.EncryptDecryptBased64.*;
 import static nt.testingtool.istqb.Utils.ImageCaptureHandler.*;
 import static nt.testingtool.istqb.Utils.ProjectConfiguration.*;
+import static nt.testingtool.istqb.Utils.TestingToolUtils.*;
 
 public class PageVBoxHandler {
     static Stage mainStage;
-
+    static Pagination pagination;
     public static ComboBox selectTestingTypeComboBox;
     public static TextField testNameTextField;
     public static Button btn_StartTest;
     public static String testUserName;
-    private static void changeStageAndScene(ActionEvent event, VBox layoutVBoxContainer, String sceneTitle) {
+
+    public static void changeStageAndScene(ActionEvent event, VBox layoutVBoxContainer, String sceneTitle) {
         mainStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         Pane layout = new Pane(layoutVBoxContainer);
         Scene scene = new Scene(layout, screenWidth, screenHeight);
@@ -52,7 +55,7 @@ public class PageVBoxHandler {
         mainStage.setScene(scene);
     }
 
-    private static void openNewStageAndScene(VBox layoutVBoxContainer, String sceneTitle) {
+    public static void openNewStageAndScene(VBox layoutVBoxContainer, String sceneTitle) {
         Stage newStage = new Stage();
         Pane layout = new Pane(layoutVBoxContainer);
         Scene scene = new Scene(layout, screenWidth, screenHeight);
@@ -76,18 +79,23 @@ public class PageVBoxHandler {
         HBox logoBox = new HBox();
         HBox infoBox = new HBox();
         Button informationButton = new Button("Credit");
-//        ImageView infoImage = new ImageView(new Image("nt/istqbtt/nt_istqbtt/infomationIcon.png"));
-//        infoImage.setFitHeight(headerHeight / 2);
-//        infoImage.setFitWidth(headerHeight / 2);
-//        informationButton.setGraphic(infoImage);
+        //Build
+//        ImageView infoImage = new ImageView(new Image("nt/testingtool/istqb/imageAsset/infomationIcon.png"));
+//        nashTechLogo.setImage(new Image("nt/istqbtt/nt_istqbtt/NashTechLogo.png"));
+        //Debug
+        ImageView infoImage = new ImageView(new Image("C:\\Users\\linhpham\\IdeaProjects\\demo\\src\\main\\resources\\nt\\testingtool\\istqb\\imageAsset\\infomationIcon.png"));
+        nashTechLogo.setImage(new Image("C:\\Users\\linhpham\\IdeaProjects\\demo\\src\\main\\resources\\nt\\testingtool\\istqb\\imageAsset\\NashTechLogo.png"));
+        infoImage.setFitHeight(headerHeight / 2);
+        infoImage.setFitWidth(headerHeight / 2);
+        informationButton.setGraphic(infoImage);
         informationButton.setOnAction(event -> {
-//            changeStageAndScene(event, setupCreditPage(toolFont), "Credit Page");
+            changeStageAndScene(event, setupCreditPage(toolFont,questionHandler), "Credit Page");
 
-            try {
-                openNewStageAndScene(setupCertificatePage(toolFont), "Certificate Page");
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+//            try {
+//                openNewStageAndScene(setupCertificatePage(toolFont), "Certificate Page");
+//            } catch (Exception e) {
+//                throw new RuntimeException(e);
+//            }
 
         });
         logoBox.setPrefSize(screenWidth / 2, headerHeight);
@@ -100,7 +108,6 @@ public class PageVBoxHandler {
         HBox.setMargin(informationButton, new Insets(20, 20, 20, 20));
         blankPaneHeader.getChildren().add(logoBox);
         blankPaneHeader.getChildren().add(infoBox);
-//        nashTechLogo.setImage(new Image("nt/istqbtt/nt_istqbtt/NashTechLogo.png"));
         Pane blankPaneFooter = new Pane();
         blankPaneFooter.setPrefHeight(screenHeight / 8);
         blankPaneFooter.setBackground(new Background(new BackgroundFill(Paint.valueOf("#CACACA"), CornerRadii.EMPTY, Insets.EMPTY)));
@@ -181,13 +188,13 @@ public class PageVBoxHandler {
                 questionHandler.isFirstLoad = true;
                 testUserName = testNameTextField.getText();
 
-//                try {
-//                    changeStageAndScene(event, setupLayoutPageExam(toolFont), "Examination Page of: " + selectTestingTypeComboBox.getValue());
-//                } catch (IOException e) {
-//                    throw new RuntimeException(e);
-//                } catch (ZipException e) {
-//                    throw new RuntimeException(e);
-//                }
+                try {
+                    changeStageAndScene(event, setupLayoutPageExam(toolFont,questionHandler), "Examination Page of: " + selectTestingTypeComboBox.getValue());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                } catch (ZipException e) {
+                    throw new RuntimeException(e);
+                }
 
             }
         });
@@ -227,7 +234,9 @@ public class PageVBoxHandler {
     }
 
     private static VBox setupCertificatePage(Font toolFont) throws Exception {
+        //Build code
 //        Image certificateBackGround = new Image("nt/testingtool/istqb/imageAsset/NTInternalCertificate.png");
+        //Debug code
         Image certificateBackGround = new Image("C:\\Users\\linhpham\\IdeaProjects\\demo\\src\\main\\resources\\nt\\testingtool\\istqb\\imageAsset\\NTInternalCertificate.png");
         Label testUserNameCertificate = new Label("ANH TRAN THI HUYNH");
         testUserNameCertificate.setStyle("-fx-font-size: 48; -fx-font-weight: bold;-fx-text-alignment: center;");
@@ -239,56 +248,25 @@ public class PageVBoxHandler {
         testTypeCertificate.setFont(new Font("Lato Bold", 36));
         testTypeCertificate.setPrefWidth(screenWidth / 1.8);
         testTypeCertificate.setWrapText(true);
-//        Label verificationTextLabel = new Label("Verification Text:");
-//        verificationTextLabel.setStyle("-fx-font-size: 12; -fx-font-weight: bold;");
-//        verificationTextLabel.setTextFill(Color.valueOf("#284977"));
         String encryptedText = encryptTextBase64WithSecretKey("This is a certificate to ANH TRAN THI HUYNH | " +
                 "Passed ISTQB - Certified Tester Foundation Level | Pass Score 30/40 | Test Date: April 25, 2023", "123");
-        System.out.println(encryptedText);
-
-//        System.out.println(System.getProperty("java.classpath"));
-//        String[] blocks = encryptedText.split("(?<=\\G.{5})");
-//        String encryptedLabel = "";
-//        for (int i=0;i<blocks.length;i++){
-//            encryptedLabel += blocks[i] + " ";
-//        }
-//        Image qrImage = SwingFXUtils.toFXImage(generateQRCodeImage(encryptedText), null);
-//        ImageView qrcode = new ImageView(qrImage);
-//        qrcode.setFitHeight(150);
-//        qrcode.setFitWidth(150);
-//        Label encryptedCertificateInfo = new Label(encryptedText);
-//        encryptedCertificateInfo.setPrefWidth(screenWidth / 2);
-//        encryptedCertificateInfo.setWrapText(true);
-//        encryptedCertificateInfo.setStyle("-fx-font-weight: bold;");
-////        encryptedCertificateInfo.setTextFill(Color.valueOf("#284977"));
-//        encryptedCertificateInfo.setFont(new Font("Poppins Extrabold", 20));
-//        System.out.println(encryptedCertificateInfo.getText());
-//        System.out.println("Decrypt: " + decryptedBase64TextWithSecretKey(encryptedCertificateInfo.getText(), "123"));
-
         VBox certificateVbox = new VBox();
         certificateVbox.setAlignment(Pos.TOP_CENTER);
         certificateVbox.setPrefSize(screenWidth / 1.2, screenHeight);
         certificateVbox.getChildren().add(testTypeCertificate);
         certificateVbox.getChildren().add(testUserNameCertificate);
-//        certificateVbox.getChildren().add(verificationTextLabel);
-//        certificateVbox.getChildren().add(encryptedCertificateInfo);
-//        certificateVbox.getChildren().add(qrcode);
         VBox.setMargin(testTypeCertificate, new Insets(screenHeight / 3, 0, 0, 0));
-        System.out.println(testTypeCertificate.getText().length());
         if (testTypeCertificate.getText().length() < 44) {
             VBox.setMargin(testUserNameCertificate, new Insets(screenHeight / 6.5, 0, 0, 0));
         } else {
             VBox.setMargin(testUserNameCertificate, new Insets(screenHeight / 11, 0, 0, 0));
         }
-//        VBox.setMargin(verificationTextLabel, new Insets(screenHeight / 6.5, 0, 0, 0));
-//        VBox.setMargin(qrcode, new Insets(screenHeight / 8, 0, 0, 0));
         certificateVbox.setBackground(new Background(new BackgroundImage(certificateBackGround, BackgroundRepeat.NO_REPEAT,
                 BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, new BackgroundSize(BackgroundSize.AUTO,
                 BackgroundSize.AUTO, false, false, true, false))));
 
         VBox commandCertificateButtonContainer = new VBox();
         commandCertificateButtonContainer.setAlignment(Pos.TOP_CENTER);
-//        commandCertificateButtonContainer.setPrefSize(screenWidth/1.1, screenHeight);
         Button saveCertificateAsImage = new Button("Save as Image");
         saveCertificateAsImage.setFont(toolFont);
         Button closeCertificatePage = new Button("Close");
@@ -298,7 +276,6 @@ public class PageVBoxHandler {
         VBox.setMargin(saveCertificateAsImage, new Insets(30, 5, 5, 25));
         VBox.setMargin(closeCertificatePage, new Insets(5, 5, 5, 25));
         saveCertificateAsImage.setOnAction(event -> {
-            //                currentPath = new java.io.File(".").getCanonicalPath();
             captureAndSaveImageInContainer(certificateVbox, "abc");
             convertPNGImageToJPG("abc");
             try {
@@ -324,5 +301,113 @@ public class PageVBoxHandler {
         VBox certificateWrapper = new VBox();
         certificateWrapper.getChildren().add(certificateContainer);
         return certificateWrapper;
+    }
+
+    private static VBox setupCreditPage(Font toolFont, QuestionHandler questionHandler) {
+        HBox creditHeader = new HBox();
+        Label thanksLabel = new Label("Thank you to the effort of all members in the team!");
+        thanksLabel.setStyle("-fx-font-size: 48; -fx-font-weight: bold;-fx-text-alignment: center;");
+        thanksLabel.setTextFill(Color.valueOf("#FA6070"));
+        thanksLabel.setFont(new Font("Lato Bold", 48));
+        Button creditPageReturnHome = new Button("Home");
+        creditPageReturnHome.setOnAction(event -> {
+            questionHandler.initSelectedAnwser();
+            questionHandler.isFirstLoad = true;
+            try {
+                changeStageAndScene(event, setupHomePage(toolFont,questionHandler), "Home Page");
+            } catch (IOException | net.lingala.zip4j.exception.ZipException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        creditHeader.setAlignment(Pos.CENTER_RIGHT);
+        creditHeader.setPrefWidth(screenWidth);
+        creditHeader.setPrefHeight(screenHeight / 8);
+        creditHeader.setBackground(new Background(new BackgroundFill(Paint.valueOf("#CACACA"), CornerRadii.EMPTY, Insets.EMPTY)));
+        creditHeader.getChildren().add(thanksLabel);
+        creditHeader.getChildren().add(creditPageReturnHome);
+        HBox.setMargin(creditPageReturnHome, new Insets(0, 20, 0, 100));
+
+        HBox creditCreator = new HBox();
+        creditCreator.setAlignment(Pos.CENTER);
+        creditCreator.setPrefWidth(screenWidth);
+        creditCreator.setPrefHeight(screenHeight / 8);
+        Label creatorName = new Label("Creator: LINH PHAM\n" +
+                "linh.pham@nashtechglobal.com");
+        creatorName.setStyle("-fx-font-size: 36; -fx-font-weight: bold;-fx-text-alignment: center;");
+        creatorName.setTextFill(Color.valueOf("#284977"));
+        creatorName.setFont(new Font("Poppins Extrabold", 36));
+        creditCreator.getChildren().add(creatorName);
+
+        HBox creditDataCollector = new HBox();
+        creditDataCollector.setAlignment(Pos.CENTER);
+        creditDataCollector.setPrefWidth(screenWidth);
+        Label dataCollectorTitle = new Label("\nData Collector:\n" +
+                "ANH TRAN THI HUYNH\nAnh.TranThiHuynh@nashtechglobal.com\n\n" +
+                "ANH NGUYEN TA TUYET\nAnh.NguyenTaTuyet@nashtechglobal.com\n\n" +
+                "TRAM NGUYEN PHUONG NGUYET\nTram.NguyenPhuongNguyet@nashtechglobal.com");
+        dataCollectorTitle.setStyle("-fx-font-size: 36; -fx-font-weight: bold;-fx-text-alignment: center;");
+        dataCollectorTitle.setTextFill(Color.valueOf("#284977"));
+        dataCollectorTitle.setFont(new Font("Poppins Extrabold", 36));
+        creditDataCollector.getChildren().add(dataCollectorTitle);
+
+        VBox creditPageVbox = new VBox();
+        creditPageVbox.setAlignment(Pos.CENTER_RIGHT);
+        creditPageVbox.getChildren().add(creditHeader);
+        creditPageVbox.getChildren().add(creditCreator);
+        creditPageVbox.getChildren().add(creditDataCollector);
+        return creditPageVbox;
+    }
+
+    public static VBox setupLayoutPageExam(Font toolFont, QuestionHandler questionHandler) throws IOException, ZipException {
+        //Read and assign all questions data to questionHandler
+        questionHandler.readQuestionZipFile(getQuestionFileName(), getZipFilePassword());
+        questionHandler.mapDataInQuestionFileToDataModelByGroupName();
+        questionHandler.initCorrectAnswer();
+        questionHandler.initSelectedAnwser();
+        questionHandler.randomChooseQuestionsInBankThenShuffleAndSaveToTestingQuestions();
+
+        //Set up Timer header
+        Label timerValue = new Label();
+        timerValue.setFont(toolFont);
+        ProgressBar timerProgressBar = new ProgressBar();
+        timerProgressBar.setPrefWidth(screenWidth * 0.87);
+        timerProgressBar.setRotate(180);
+        timerProgressBar.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
+        final int[] seconds = {getTestingMinutes() * 60};
+        int totalSeconds = seconds[0];
+        setTimerTimeLine(new Timeline(new KeyFrame(Duration.seconds(1), ev -> {
+            timerValue.setText("Time left " + calculateTimeLeft(seconds));
+            seconds[0]--;
+            timerProgressBar.setProgress(1 - (double) seconds[0] / totalSeconds);
+            if (seconds[0] < 0) getTimerTimeLine().stop();
+        })));
+        getTimerTimeLine().setCycleCount(Animation.INDEFINITE);
+        getTimerTimeLine().play();
+        //End of timer
+        HBox timerArea = new HBox();
+        HBox.setMargin(timerValue, new Insets(5, 5, 5, 5));
+        HBox.setMargin(timerProgressBar, new Insets(15, 15, 15, 15));
+        timerArea.getChildren().add(timerValue);
+        timerArea.getChildren().add(timerProgressBar);
+
+        //Set up Pagination question pages
+        TestingToolUtils.getQuestionHandler(questionHandler);
+        pagination = new Pagination(getNumberOfQuestionsPerQuestionBank());
+        pagination.getStyleClass().add(Pagination.STYLE_CLASS_BULLET);
+        pagination.setPageFactory(TestingToolUtils::getQuestionPages);
+        pagination.setMaxPageIndicatorCount(40);
+        pagination.setScaleX(1.7);
+        pagination.setScaleY(1.7);
+        HBox questionPane = new HBox(pagination);
+        questionPane.setAlignment(Pos.CENTER);
+        HBox.setMargin(pagination, new Insets(160, 0, 0, 0));
+
+        //Set up Exam VBox
+        VBox examVBox = new VBox();
+        examVBox.getChildren().add(timerArea);
+        examVBox.getChildren().add(questionPane);
+
+        return examVBox;
     }
 }

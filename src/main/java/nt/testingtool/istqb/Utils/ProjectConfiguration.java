@@ -19,10 +19,29 @@ public class ProjectConfiguration {
     //    private static int numberOfQuestionBanksInGroup = 0;
     private static String questionGroupName = "";
     private final String currentPath = null;
+
+    public static double getObjectWidthInScrollPane() {
+        return objectWidthInScrollPane;
+    }
+
+    public static double getCheckBoxWidthInScrollPane() {
+        return checkBoxWidthInScrollPane;
+    }
+
     //set up component size
-    private final double objectWidthInScrollPane = screenWidth * 0.54;
-    private final double checkBoxWidthInScrollPane = screenWidth * 0.25;
-    private Timeline timerTimeLine;
+    private static final double objectWidthInScrollPane = screenWidth * 0.54;
+    private static final double checkBoxWidthInScrollPane = screenWidth * 0.25;
+
+    public static Timeline getTimerTimeLine() {
+        return timerTimeLine;
+    }
+
+    public static void setTimerTimeLine(Timeline timer) {
+        timerTimeLine = timer;
+    }
+
+    private static Timeline timerTimeLine;
+    private static int maxNumberOfAnswerElementsInQuestionBank = 10;
 
     public static String getCurrentPath() throws IOException {
         return new java.io.File(".").getCanonicalPath();
@@ -52,14 +71,6 @@ public class ProjectConfiguration {
         ProjectConfiguration.questionFileName = questionFileName;
     }
 
-//    public static int getNumberOfQuestionBanksInGroup() {
-//        return numberOfQuestionBanksInGroup;
-//    }
-//
-//    public static void setNumberOfQuestionBanksInGroup(int numberOfQuestionBanksInGroup) {
-//        ProjectConfiguration.numberOfQuestionBanksInGroup = numberOfQuestionBanksInGroup;
-//    }
-
     public static String getZipFilePassword() {
         return zipFilePassword;
     }
@@ -68,7 +79,23 @@ public class ProjectConfiguration {
         ProjectConfiguration.zipFilePassword = filePassword;
     }
 
-    public int getTestingMinutes() {
+//    public static int getNumberOfQuestionBanksInGroup() {
+//        return numberOfQuestionBanksInGroup;
+//    }
+//
+//    public static void setNumberOfQuestionBanksInGroup(int numberOfQuestionBanksInGroup) {
+//        ProjectConfiguration.numberOfQuestionBanksInGroup = numberOfQuestionBanksInGroup;
+//    }
+
+    public static int getMaxNumberOfAnswerElementsInQuestionBank() {
+        return maxNumberOfAnswerElementsInQuestionBank;
+    }
+
+    public static void setMaxNumberOfAnswerElementsInQuestionBank(int numberOfAnswerElementsInQuestionBank) {
+        maxNumberOfAnswerElementsInQuestionBank = numberOfAnswerElementsInQuestionBank;
+    }
+
+    public static int getTestingMinutes() {
         return testingMinutes;
     }
 

@@ -9,11 +9,11 @@ import java.io.IOException;
 
 import static nt.testingtool.istqb.Utils.ProjectConfiguration.*;
 
-public class HelloApplication extends Application {
+public class NT_Testing_Tool_Application extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("istqbtt_page.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(NT_Testing_Tool_Application.class.getResource("istqbtt_page.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), screenWidth, screenHeight);
         stage.setTitle("Home Page");
         stage.setScene(scene);
