@@ -16,7 +16,6 @@ import java.util.Base64;
 public class EncryptDecryptBased64 {
     public static String encryptTextBase64WithSecretKey(String textToEncrypt, String personKey) throws Exception {
         IvParameterSpec ivParameterSpec = generateIv();
-        System.out.println(Arrays.toString(ivParameterSpec.getIV()));
         SecretKey personalKey = getKeyFromPassword(personKey, "123456789");
         return encrypt("AES/CBC/PKCS5Padding", textToEncrypt, personalKey, ivParameterSpec);
     }

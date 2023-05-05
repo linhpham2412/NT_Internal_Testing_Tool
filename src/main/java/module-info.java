@@ -14,6 +14,7 @@ module nt.testingtool.istqb {
     requires javafx.swing;
     requires metadata.extractor;
     requires org.apache.commons.imaging;
+    requires org.apache.commons.io;
 
     opens nt.testingtool.istqb to javafx.fxml;
     exports nt.testingtool.istqb;
