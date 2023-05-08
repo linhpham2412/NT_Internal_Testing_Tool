@@ -33,10 +33,12 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.stream.Collectors;
 
-import static nt.testingtool.istqb.Utils.EncryptDecryptBased64.*;
+import static nt.testingtool.istqb.Utils.EncryptDecryptBased64.encryptTextBase64WithSecretKey;
 import static nt.testingtool.istqb.Utils.ImageCaptureHandler.*;
 import static nt.testingtool.istqb.Utils.ProjectConfiguration.*;
+import static nt.testingtool.istqb.Utils.QuestionHandler.*;
 import static nt.testingtool.istqb.Utils.TestingToolUtils.*;
+import static org.apache.commons.io.FileUtils.cleanDirectory;
 
 public class PageVBoxHandler {
     static Stage mainStage;
@@ -44,7 +46,7 @@ public class PageVBoxHandler {
     public static ComboBox selectTestingTypeComboBox;
     public static TextField testNameTextField;
     public static Button btn_StartTest;
-    public static String testUserName;
+    public static String testUserName = "";
 
     public static void changeStageAndScene(ActionEvent event, VBox layoutVBoxContainer, String sceneTitle) {
         mainStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
@@ -64,10 +66,13 @@ public class PageVBoxHandler {
         newStage.setScene(scene);
         newStage.show();
     }
-    public static VBox setupHomePage(Font toolFont, QuestionHandler questionHandler) throws IOException, net.lingala.zip4j.exception.ZipException {
+
+    public static VBox setupHomePage() throws IOException, net.lingala.zip4j.exception.ZipException {
+        utilQuestionHandler = initQuestionHandler();
+        isTestingEnd=false;
         //Read zip data file
-        questionHandler.readQuestionZipFile(getQuestionFileName(), getZipFilePassword());
-        questionHandler.readAndSaveAllISTQBTypeInData(getZipFilePassword());
+        utilQuestionHandler.readQuestionZipFile(getQuestionFileName(), getZipFilePassword());
+        utilQuestionHandler.readAndSaveAllISTQBTypeInData(getZipFilePassword());
         //Set up layout
         Pane blankPaneHeader = new Pane();
         double headerHeight = screenHeight / 8;
@@ -89,10 +94,13 @@ public class PageVBoxHandler {
         infoImage.setFitWidth(headerHeight / 2);
         informationButton.setGraphic(infoImage);
         informationButton.setOnAction(event -> {
-            changeStageAndScene(event, setupCreditPage(toolFont,questionHandler), "Credit Page");
+            changeStageAndScene(event, setupCreditPage(), "Credit Page");
 
 //            try {
-//                openNewStageAndScene(setupCertificatePage(toolFont), "Certificate Page");
+//                //Debug
+////                testUserName = testNameTextField.getText();
+//                //End debug
+//                openNewStageAndScene(setupCertificatePage(), "Certificate Page");
 //            } catch (Exception e) {
 //                throw new RuntimeException(e);
 //            }
@@ -161,11 +169,11 @@ public class PageVBoxHandler {
         //End information pane
 
         selectTestingTypeComboBox = new ComboBox();
-        questionHandler.getListOfISTQBTypeReadFromData().stream()
+        utilQuestionHandler.getListOfISTQBTypeReadFromData().stream()
                 .map(e -> selectTestingTypeComboBox.getItems().add(e)).collect(Collectors.toList());
         selectTestingTypeComboBox.setStyle("-fx-font-size: 16");
         selectTestingTypeComboBox.setOnAction(event -> {
-            ProjectConfiguration.setQuestionGroupName((String) selectTestingTypeComboBox.getValue());
+            setQuestionGroupName((String) selectTestingTypeComboBox.getValue());
             istqbDetailText.setText(selectTestingTypeComboBox.getValue().toString() + "\nNumber of Question: 40\nPassing Score (at least 65%): 26\nTesting Time: 60 minutes\n" +
                     "Note that the score calculate based on number of correct questions!");
         });
@@ -181,32 +189,41 @@ public class PageVBoxHandler {
         testNameLabel.setFont(toolFont);
         testNameTextField = new TextField();
         testNameTextField.setFont(toolFont);
+        if (!testUserName.equals("")) testNameTextField.setText(testUserName);
         btn_StartTest = new Button("Start Test");
         btn_StartTest.setFont(toolFont);
         btn_StartTest.setOnAction(event -> {
             if (selectTestingTypeComboBox.getValue() != null) {
-                questionHandler.isFirstLoad = true;
+                utilQuestionHandler.isFirstLoad = true;
                 testUserName = testNameTextField.getText();
-
-                try {
-                    changeStageAndScene(event, setupLayoutPageExam(toolFont,questionHandler), "Examination Page of: " + selectTestingTypeComboBox.getValue());
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                } catch (ZipException e) {
-                    throw new RuntimeException(e);
+                if (testUserName.equals("")) {
+                    AlertDisplay.displayMissingInformationAlert("Missing User Name"
+                            , "Please input your name before you start the test");
+                } else {
+                    try {
+                        //Debug
+                        setTestingMinutes(1);
+                        //End debug
+                        changeStageAndScene(event, setupLayoutPageExam(), "Examination Page of: "
+                                + getQuestionGroupName());
+                    } catch (IOException | ZipException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
-
+            } else {
+                AlertDisplay.displayMissingInformationAlert("Missing ISTQB Type"
+                ,"Please select ISTQB Type to start the test");
             }
         });
         Button quitAppHomeButton = new Button("Quit");
         quitAppHomeButton.setFont(toolFont);
         quitAppHomeButton.setOnAction(event -> {
-//            try {
-//                cleanDirectory(questionHandler.imagesFolder);
-//                questionHandler.imagesFolder.delete();
-//            } catch (IOException e) {
-//                throw new RuntimeException(e);
-//            }
+            try {
+                cleanDirectory(utilQuestionHandler.imagesFolder);
+                utilQuestionHandler.imagesFolder.delete();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             ((Stage) (quitAppHomeButton.getScene().getWindow())).close();
         });
         HBox commandContainer = new HBox();
@@ -233,23 +250,36 @@ public class PageVBoxHandler {
         return resultVBox;
     }
 
-    private static VBox setupCertificatePage(Font toolFont) throws Exception {
+    private static VBox setupCertificatePage() throws Exception {
         //Build code
 //        Image certificateBackGround = new Image("nt/testingtool/istqb/imageAsset/NTInternalCertificate.png");
         //Debug code
         Image certificateBackGround = new Image("C:\\Users\\linhpham\\IdeaProjects\\demo\\src\\main\\resources\\nt\\testingtool\\istqb\\imageAsset\\NTInternalCertificate.png");
-        Label testUserNameCertificate = new Label("ANH TRAN THI HUYNH");
+        Label testUserNameCertificate = new Label(testUserName);
         testUserNameCertificate.setStyle("-fx-font-size: 48; -fx-font-weight: bold;-fx-text-alignment: center;");
         testUserNameCertificate.setTextFill(Color.valueOf("#284977"));
         testUserNameCertificate.setFont(new Font("Poppins Extrabold", 36));
-        Label testTypeCertificate = new Label("Advanced CTAL-TTA Certified Tester Advanced Level Technical Test Analyst v3.0");
+        Label testTypeCertificate = new Label(getQuestionGroupShortName());
         testTypeCertificate.setStyle("-fx-font-size: 36; -fx-font-weight: bold;-fx-text-alignment: center;");
         testTypeCertificate.setTextFill(Color.valueOf("#FA6070"));
         testTypeCertificate.setFont(new Font("Lato Bold", 36));
-        testTypeCertificate.setPrefWidth(screenWidth / 1.8);
+        if (testTypeCertificate.getText().length() > 44) {
+            testTypeCertificate.setPrefWidth(screenWidth / 1.8);
+        }
         testTypeCertificate.setWrapText(true);
-        String encryptedText = encryptTextBase64WithSecretKey("This is a certificate to ANH TRAN THI HUYNH | " +
-                "Passed ISTQB - Certified Tester Foundation Level | Pass Score 30/40 | Test Date: April 25, 2023", "123");
+        //Build
+        String encryptedText = encryptTextBase64WithSecretKey("This is a certificate to "+testUserName+" | " +
+                "Passed "+getQuestionGroupShortName()+" | Pass Score "+calculateTestingResult()
+                        +"/"+getNumberOfQuestionsPerQuestionBank()+" | Test Date: "+getTodayDate()
+                ,getZipFilePassword());
+//        //Debug
+//        String encryptedText = encryptTextBase64WithSecretKey("This is a certificate to: " + testUserName + " | " +
+//                        "Passed: " + getQuestionGroupShortName() + " | Pass Score: 30/"
+//                        + getNumberOfQuestionsPerQuestionBank() + " | Test Date: " + getTodayDate()
+//                , getZipFilePassword());
+//        System.out.println("This is a certificate to: " + testUserName + " | " +
+//                "Passed: " + getQuestionGroupShortName() + " | Pass Score: 30/"
+//                + getMaxNumberOfAnswerElementsInQuestionBank() + " | Test Date: " + getTodayDate());
         VBox certificateVbox = new VBox();
         certificateVbox.setAlignment(Pos.TOP_CENTER);
         certificateVbox.setPrefSize(screenWidth / 1.2, screenHeight);
@@ -279,11 +309,11 @@ public class PageVBoxHandler {
             captureAndSaveImageInContainer(certificateVbox, "abc");
             convertPNGImageToJPG("abc");
             try {
-                File jpgImageFile = new File(getCurrentPath()+File.separator+"abc.jpg");
-                File destinationImage = new File(getCurrentPath()+File.separator+"abcWithTitle.jpg");
-                updateWindowsFields(jpgImageFile,destinationImage,encryptedText);
+                File jpgImageFile = new File(getCurrentPath() + File.separator + "abc.jpg");
+                File destinationImage = new File(getCurrentPath() + File.separator + "abcWithTitle.jpg");
+                updateWindowsFields(jpgImageFile, destinationImage, encryptedText);
                 String imageTitle = readTitleInMetadataOfJpgImage(destinationImage);
-                System.out.println(EncryptDecryptBased64.decryptedBase64TextWithSecretKey(imageTitle,"123"));
+                System.out.println(EncryptDecryptBased64.decryptedBase64TextWithSecretKey(imageTitle, "123"));
             } catch (IOException | ImageWriteException | ImageReadException | InvalidAlgorithmParameterException |
                      NoSuchPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException |
                      InvalidKeySpecException | BadPaddingException | InvalidKeyException e) {
@@ -303,7 +333,7 @@ public class PageVBoxHandler {
         return certificateWrapper;
     }
 
-    private static VBox setupCreditPage(Font toolFont, QuestionHandler questionHandler) {
+    private static VBox setupCreditPage() {
         HBox creditHeader = new HBox();
         Label thanksLabel = new Label("Thank you to the effort of all members in the team!");
         thanksLabel.setStyle("-fx-font-size: 48; -fx-font-weight: bold;-fx-text-alignment: center;");
@@ -311,10 +341,10 @@ public class PageVBoxHandler {
         thanksLabel.setFont(new Font("Lato Bold", 48));
         Button creditPageReturnHome = new Button("Home");
         creditPageReturnHome.setOnAction(event -> {
-            questionHandler.initSelectedAnwser();
-            questionHandler.isFirstLoad = true;
+            initSelectedAnwser();
+            utilQuestionHandler.isFirstLoad = true;
             try {
-                changeStageAndScene(event, setupHomePage(toolFont,questionHandler), "Home Page");
+                changeStageAndScene(event, setupHomePage(), "Home Page");
             } catch (IOException | net.lingala.zip4j.exception.ZipException e) {
                 throw new RuntimeException(e);
             }
@@ -359,13 +389,13 @@ public class PageVBoxHandler {
         return creditPageVbox;
     }
 
-    public static VBox setupLayoutPageExam(Font toolFont, QuestionHandler questionHandler) throws IOException, ZipException {
+    public static VBox setupLayoutPageExam() throws IOException, ZipException {
         //Read and assign all questions data to questionHandler
-        questionHandler.readQuestionZipFile(getQuestionFileName(), getZipFilePassword());
-        questionHandler.mapDataInQuestionFileToDataModelByGroupName();
-        questionHandler.initCorrectAnswer();
-        questionHandler.initSelectedAnwser();
-        questionHandler.randomChooseQuestionsInBankThenShuffleAndSaveToTestingQuestions();
+        utilQuestionHandler.readQuestionZipFile(getQuestionFileName(), getZipFilePassword());
+        utilQuestionHandler.mapDataInQuestionFileToDataModelByGroupName();
+        initCorrectAnswer();
+        initSelectedAnwser();
+        utilQuestionHandler.randomChooseQuestionsInBankThenShuffleAndSaveToTestingQuestions();
 
         //Set up Timer header
         Label timerValue = new Label();
@@ -380,7 +410,14 @@ public class PageVBoxHandler {
             timerValue.setText("Time left " + calculateTimeLeft(seconds));
             seconds[0]--;
             timerProgressBar.setProgress(1 - (double) seconds[0] / totalSeconds);
-            if (seconds[0] < 0) getTimerTimeLine().stop();
+            if (seconds[0] < 0) {
+                getTimerTimeLine().stop();
+                isTestingEnd=true;
+                disableAllAnswersInHBoxContainer();
+                assignAnswersDataFromClassToCheckBoxOrRadioButton(getCurrentPageIndex());
+                pagination.setCurrentPageIndex(getNumberOfQuestionsPerQuestionBank());
+                AlertDisplay.displayTimingAlert("Time's up!", "All questions are unable to change!");
+            }
         })));
         getTimerTimeLine().setCycleCount(Animation.INDEFINITE);
         getTimerTimeLine().play();
@@ -392,7 +429,6 @@ public class PageVBoxHandler {
         timerArea.getChildren().add(timerProgressBar);
 
         //Set up Pagination question pages
-        TestingToolUtils.getQuestionHandler(questionHandler);
         pagination = new Pagination(getNumberOfQuestionsPerQuestionBank());
         pagination.getStyleClass().add(Pagination.STYLE_CLASS_BULLET);
         pagination.setPageFactory(TestingToolUtils::getQuestionPages);
@@ -409,5 +445,91 @@ public class PageVBoxHandler {
         examVBox.getChildren().add(questionPane);
 
         return examVBox;
+    }
+
+    public static VBox setupSummaryPage() {
+        Pane blankPaneHeader = new Pane();
+        blankPaneHeader.setPrefHeight(screenHeight / 4);
+        blankPaneHeader.setBackground(new Background(new BackgroundFill(Paint.valueOf("#CACACA"), CornerRadii.EMPTY, Insets.EMPTY)));
+        Pane blankPaneFooter = new Pane();
+        blankPaneFooter.setPrefHeight(screenHeight / 2);
+        blankPaneFooter.setBackground(new Background(new BackgroundFill(Paint.valueOf("#CACACA"), CornerRadii.EMPTY, Insets.EMPTY)));
+        Label resultTitle = new Label("Your result is:");
+        resultTitle.setStyle("-fx-font-size: 48;");
+        int correctAnswer = calculateTestingResult();
+        String passFailString = determinePassOrFail(correctAnswer);
+        Label resultPassFail = new Label(passFailString);
+        if (passFailString.equals("Passed")) {
+            resultPassFail.setStyle("-fx-text-fill: #5E8C5D; -fx-font-size: 72; -fx-font-weight: bold;");
+        } else {
+            resultPassFail.setStyle("-fx-text-fill: #F0292A; -fx-font-size: 72; -fx-font-weight: bold;");
+        }
+        Label resultDashLine = new Label("------------------------------------------------------------------------------------------------------");
+        resultDashLine.setFont(toolFont);
+        Label resultActualScore = new Label("Correct " + correctAnswer + "/" + getNumberOfQuestionsPerQuestionBank());
+        resultActualScore.setStyle("-fx-font-size: 48;");
+
+        //add command button
+        Button returnToHomeButton = new Button("Return Home");
+        returnToHomeButton.setFont(toolFont);
+        returnToHomeButton.setOnAction(event -> {
+            initSelectedAnwser();
+            utilQuestionHandler.isFirstLoad = true;
+
+            try {
+                changeStageAndScene(event, setupHomePage(), "Home Page");
+            } catch (IOException | ZipException e) {
+                throw new RuntimeException(e);
+            }
+
+        });
+        Button startNewTestButton = new Button("Start New Test");
+        startNewTestButton.setOnAction(event -> {
+
+            initSelectedAnwser();
+            try {
+                isTestingEnd=false;
+                changeStageAndScene(event, setupLayoutPageExam()
+                        , "Examination Page of: " + selectTestingTypeComboBox.getValue());
+            } catch (IOException | ZipException e) {
+                throw new RuntimeException(e);
+            }
+
+        });
+        startNewTestButton.setFont(toolFont);
+        Button quitAppButton = new Button("Quit");
+        quitAppButton.setFont(toolFont);
+        quitAppButton.setOnAction(event -> {
+            try {
+                cleanDirectory(utilQuestionHandler.imagesFolder);
+                utilQuestionHandler.imagesFolder.delete();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            ((Stage) (quitAppButton.getScene().getWindow())).close();
+        });
+        HBox summaryCommandContainer = new HBox();
+        summaryCommandContainer.setPrefWidth(screenWidth);
+        summaryCommandContainer.setAlignment(Pos.CENTER);
+        summaryCommandContainer.getChildren().add(returnToHomeButton);
+        summaryCommandContainer.getChildren().add(startNewTestButton);
+        summaryCommandContainer.getChildren().add(quitAppButton);
+        HBox.setMargin(returnToHomeButton, new Insets(10, 10, 10, 10));
+        HBox.setMargin(startNewTestButton, new Insets(10, 10, 10, 10));
+        HBox.setMargin(quitAppButton, new Insets(10, 10, 10, 30));
+
+        //Set up Result VBox
+        VBox resultVBox = new VBox();
+        resultVBox.setPrefWidth(screenWidth);
+        resultVBox.setAlignment(Pos.CENTER);
+        resultVBox.getChildren().add(blankPaneHeader);
+        resultVBox.getChildren().add(resultTitle);
+        resultVBox.getChildren().add(resultPassFail);
+        resultVBox.getChildren().add(resultDashLine);
+        resultVBox.getChildren().add(resultActualScore);
+        resultVBox.getChildren().add(summaryCommandContainer);
+        resultVBox.getChildren().add(blankPaneFooter);
+
+        return resultVBox;
     }
 }
