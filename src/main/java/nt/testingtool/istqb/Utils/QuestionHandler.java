@@ -57,6 +57,10 @@ public class QuestionHandler {
     private String readData;
     private String zipPassword = "";
 
+    public static QuestionHandler initQuestionHandler(){
+        return new QuestionHandler();
+    }
+
     public static boolean isQuestionMultipleChoices() {
         return isQuestionMultipleChoices;
     }
@@ -481,5 +485,15 @@ public class QuestionHandler {
 
     private int convertBooleanToOneOrZero(boolean booleanToConvert) {
         return (booleanToConvert) ? 1 : 0;
+    }
+
+    public static String checkUnAnsweredQuestions(){
+        StringBuilder remainingUnAnswers = new StringBuilder();
+        for (int i =0;i<getNumberOfQuestionsPerQuestionBank();i++){
+            if(Arrays.stream(selectedAnswer[i]).sum()==0){
+                remainingUnAnswers.append(i+1).append(", ");
+            }
+        }
+        return remainingUnAnswers.deleteCharAt(remainingUnAnswers.length()-2).toString().trim();
     }
 }

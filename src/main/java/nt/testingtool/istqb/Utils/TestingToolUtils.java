@@ -8,29 +8,29 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Paint;
-import javafx.scene.text.Font;
-import javafx.stage.Stage;
-import net.lingala.zip4j.exception.ZipException;
 import nt.testingtool.istqb.datamodel.QuestionDataModel;
 
-import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Objects;
 
 import static nt.testingtool.istqb.Utils.PageVBoxHandler.*;
 import static nt.testingtool.istqb.Utils.ProjectConfiguration.*;
 import static nt.testingtool.istqb.Utils.QuestionHandler.*;
-import static org.apache.commons.io.FileUtils.cleanDirectory;
 
 public class TestingToolUtils {
 
     static QuestionHandler utilQuestionHandler;
 
-    public static void getQuestionHandler(QuestionHandler questionHandler){
-        utilQuestionHandler = questionHandler;
+    public static int getCurrentPageIndex() {
+        return currentPageIndex;
     }
 
-    private static int calculateTestingResult() {
+    static int currentPageIndex=0;
+    static boolean isTestingEnd = false;
+
+    public static int calculateTestingResult() {
         int calculatedCorrectAnswers = 0;
         for (int i = 0; i < getCorrectAnswer().length; i++) {
             if (Arrays.equals(getCorrectAnswer()[i], getSelectedAnswer()[i])) {
@@ -40,7 +40,7 @@ public class TestingToolUtils {
         return calculatedCorrectAnswers;
     }
 
-    private static String determinePassOrFail(int actualResult) {
+    public static String determinePassOrFail(int actualResult) {
         return (actualResult < 26) ? "Failed" : "Passed";
     }
 
@@ -64,6 +64,7 @@ public class TestingToolUtils {
 
     public static ScrollPane getQuestionPages(int pageIndex) {
         //setup and clean up data
+        currentPageIndex=pageIndex;
         utilQuestionHandler.initQuestionElements(pageIndex);
         //map question data to local variables
         mapValueFromTestingQuestionToLocalVariablesByPageIndex(pageIndex);
@@ -73,6 +74,7 @@ public class TestingToolUtils {
         String kindOfChoice = (utilQuestionHandler.isQuestionMultipleChoices()) ? "[Multi Choice]" : "[Single choice]";
         Label answerLabel = new Label("Answer: " + kindOfChoice);
         assignAnswersDataFromClassToCheckBoxOrRadioButton(pageIndex);
+        if (isTestingEnd) disableAllAnswersInHBoxContainer();
         VBox questionContainer = new VBox();
         questionContainer.getChildren().add(questionNumber);
         addTitleObjectsToVBoxContainer(questionContainer);
@@ -97,123 +99,59 @@ public class TestingToolUtils {
         return scrollPaneQuestion;
     }
 
-    private static void addNavigationButtonsToVBoxContainer(VBox questionContainer, int pageIndex) {
+    public static void addNavigationButtonsToVBoxContainer(VBox questionContainer, int pageIndex) {
         Button nextPageButton = new Button("Next");
         Button previousPageButton = new Button("Previous");
         Button endTestButton = new Button("End Test");
+        Button summaryPageButton = new Button("Summary Page");
+//        summaryPageButton.setVisible(isTestingEnd);
         HBox navigationContainer = new HBox();
+        navigationContainer.getChildren().add(summaryPageButton);
         navigationContainer.getChildren().add(previousPageButton);
         navigationContainer.getChildren().add(nextPageButton);
         navigationContainer.getChildren().add(endTestButton);
         navigationContainer.setAlignment(Pos.CENTER);
+        HBox.setMargin(summaryPageButton, new Insets(10, 5, 5, 5));
         HBox.setMargin(previousPageButton, new Insets(10, 5, 5, 5));
         HBox.setMargin(nextPageButton, new Insets(10, 5, 5, 5));
         HBox.setMargin(endTestButton, new Insets(10, 10, 5, 10));
         if (pageIndex == 0) {
+            summaryPageButton.setVisible(false);
             nextPageButton.setDisable(false);
             previousPageButton.setDisable(true);
             endTestButton.setVisible(false);
         } else if (pageIndex == getNumberOfQuestionsPerQuestionBank() - 1) {
+            summaryPageButton.setVisible(true);
             nextPageButton.setDisable(true);
             previousPageButton.setDisable(false);
             endTestButton.setVisible(true);
         } else {
+            summaryPageButton.setVisible(false);
             nextPageButton.setDisable(false);
             previousPageButton.setDisable(false);
             endTestButton.setVisible(false);
         }
+        if (isTestingEnd) endTestButton.setDisable(true);
         nextPageButton.setOnAction(event -> pagination.setCurrentPageIndex(pageIndex + 1));
         previousPageButton.setOnAction(event -> pagination.setCurrentPageIndex(pageIndex - 1));
         endTestButton.setOnAction(event -> {
-            changeStageAndScene(event, setupSummaryPage(toolFont), "Summary Page");
+            try {
+                String remainingAnswers = checkUnAnsweredQuestions();
+                AlertDisplay.displayMissingInformationAlert("Unfinished Answers Remain! \n" +
+                        "Click on Summary Page button to skip this check! \n"+
+                        "Please recheck these questions below: ",remainingAnswers);
+            } catch (Exception e) {
+                changeStageAndScene(event, setupSummaryPage(), "Summary Page");
+            }
+        });
+        summaryPageButton.setOnAction(event -> {
+            isTestingEnd=false;
+            changeStageAndScene(event,setupSummaryPage(),"Summary Page");
         });
         questionContainer.getChildren().add(navigationContainer);
     }
 
-    private static VBox setupSummaryPage(Font toolFont) {
-        Pane blankPaneHeader = new Pane();
-        blankPaneHeader.setPrefHeight(screenHeight / 4);
-        blankPaneHeader.setBackground(new Background(new BackgroundFill(Paint.valueOf("#CACACA"), CornerRadii.EMPTY, Insets.EMPTY)));
-        Pane blankPaneFooter = new Pane();
-        blankPaneFooter.setPrefHeight(screenHeight / 2);
-        blankPaneFooter.setBackground(new Background(new BackgroundFill(Paint.valueOf("#CACACA"), CornerRadii.EMPTY, Insets.EMPTY)));
-        Label resultTitle = new Label("Your result is:");
-        resultTitle.setStyle("-fx-font-size: 48;");
-        int correctAnswer = calculateTestingResult();
-        String passFailString = determinePassOrFail(correctAnswer);
-        Label resultPassFail = new Label(passFailString);
-        if (passFailString.equals("Passed")) {
-            resultPassFail.setStyle("-fx-text-fill: #5E8C5D; -fx-font-size: 72; -fx-font-weight: bold;");
-        } else {
-            resultPassFail.setStyle("-fx-text-fill: #F0292A; -fx-font-size: 72; -fx-font-weight: bold;");
-        }
-        Label resultDashLine = new Label("------------------------------------------------------------------------------------------------------");
-        resultDashLine.setFont(toolFont);
-        Label resultActualScore = new Label("Correct " + correctAnswer + "/" + getNumberOfQuestionsPerQuestionBank());
-        resultActualScore.setStyle("-fx-font-size: 48;");
 
-        //add command button
-        Button returnToHomeButton = new Button("Return Home");
-        returnToHomeButton.setFont(toolFont);
-        returnToHomeButton.setOnAction(event -> {
-            initSelectedAnwser();
-            utilQuestionHandler.isFirstLoad = true;
-
-            try {
-                changeStageAndScene(event, setupHomePage(toolFont,utilQuestionHandler), "Home Page");
-            } catch (IOException | ZipException e) {
-                throw new RuntimeException(e);
-            }
-
-        });
-        Button startNewTestButton = new Button("Start New Test");
-        startNewTestButton.setOnAction(event -> {
-
-            selectedAnswer = new int[40][10];
-            try {
-                changeStageAndScene(event, setupLayoutPageExam(toolFont,utilQuestionHandler)
-                        , "Examination Page of: " + selectTestingTypeComboBox.getValue());
-            } catch (IOException | ZipException e) {
-                throw new RuntimeException(e);
-            }
-
-        });
-        startNewTestButton.setFont(toolFont);
-        Button quitAppButton = new Button("Quit");
-        quitAppButton.setFont(toolFont);
-        quitAppButton.setOnAction(event -> {
-            try {
-                cleanDirectory(utilQuestionHandler.imagesFolder);
-                utilQuestionHandler.imagesFolder.delete();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            ((Stage) (quitAppButton.getScene().getWindow())).close();
-        });
-        HBox summaryCommandContainer = new HBox();
-        summaryCommandContainer.setPrefWidth(screenWidth);
-        summaryCommandContainer.setAlignment(Pos.CENTER);
-        summaryCommandContainer.getChildren().add(returnToHomeButton);
-        summaryCommandContainer.getChildren().add(startNewTestButton);
-        summaryCommandContainer.getChildren().add(quitAppButton);
-        HBox.setMargin(returnToHomeButton, new Insets(10, 10, 10, 10));
-        HBox.setMargin(startNewTestButton, new Insets(10, 10, 10, 10));
-        HBox.setMargin(quitAppButton, new Insets(10, 10, 10, 30));
-
-        //Set up Result VBox
-        VBox resultVBox = new VBox();
-        resultVBox.setPrefWidth(screenWidth);
-        resultVBox.setAlignment(Pos.CENTER);
-        resultVBox.getChildren().add(blankPaneHeader);
-        resultVBox.getChildren().add(resultTitle);
-        resultVBox.getChildren().add(resultPassFail);
-        resultVBox.getChildren().add(resultDashLine);
-        resultVBox.getChildren().add(resultActualScore);
-        resultVBox.getChildren().add(summaryCommandContainer);
-        resultVBox.getChildren().add(blankPaneFooter);
-
-        return resultVBox;
-    }
 
     private static void mapValueFromTestingQuestionToLocalVariablesByPageIndex(int questionIndex) {
         QuestionDataModel testingQuestion = utilQuestionHandler.testingQuestions[questionIndex];
@@ -321,7 +259,7 @@ public class TestingToolUtils {
         return questionContainer;
     }
 
-    private static void assignAnswersDataFromClassToCheckBoxOrRadioButton(int pageIndex) {
+    public static void assignAnswersDataFromClassToCheckBoxOrRadioButton(int pageIndex) {
         int answerIndex = 0;
         for (int i = 0; i < 5; i++) {
             if (Objects.equals(utilQuestionHandler.questionStringAnswer[answerIndex], "")) {
@@ -416,5 +354,21 @@ public class TestingToolUtils {
             }
         }
         return questionContainer;
+    }
+
+    public static String getTodayDate(){
+        // Get the current date and time
+        LocalDateTime now = LocalDateTime.now ();
+
+        // Format the date and time
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern ("MMM dd, yyyy");
+        return formatter.format (now);
+    }
+
+    public static void disableAllAnswersInHBoxContainer(){
+        try {
+            Arrays.stream(answerHBoxContainers).forEach(hBox -> hBox.setDisable(true));
+        } catch (Exception e) {
+        }
     }
 }

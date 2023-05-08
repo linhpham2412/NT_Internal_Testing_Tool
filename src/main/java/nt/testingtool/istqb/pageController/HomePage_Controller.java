@@ -24,7 +24,7 @@ public class HomePage_Controller implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         questionHandler = new QuestionHandler();
         try {
-            examPageVBox = setupHomePage(toolFont,questionHandler);
+            examPageVBox = setupHomePage();
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (ZipException e) {

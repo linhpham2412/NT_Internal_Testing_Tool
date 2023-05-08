@@ -4,6 +4,9 @@ import javafx.animation.Timeline;
 import javafx.scene.text.Font;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class ProjectConfiguration {
     public static Font toolFont = new Font(24);
@@ -16,7 +19,6 @@ public class ProjectConfiguration {
     private static int testingMinutes = 60;
     //Question section
     private static int numberOfQuestionsPerQuestionBank = 40;
-    //    private static int numberOfQuestionBanksInGroup = 0;
     private static String questionGroupName = "";
     private final String currentPath = null;
 
@@ -57,6 +59,17 @@ public class ProjectConfiguration {
 
     public static String getQuestionGroupName() {
         return questionGroupName;
+    }
+
+    public static String getQuestionGroupShortName(){
+        String[] istqbTestingTypeShortName = questionGroupName.split(" ");
+        Object[] istqbShortName = Arrays.stream(istqbTestingTypeShortName,2
+                ,istqbTestingTypeShortName.length).toArray();
+        return Arrays.toString(istqbShortName)
+                .replace("[","")
+                .replace("]","")
+                .replace(",","")
+                .trim();
     }
 
     public static void setQuestionGroupName(String questionGroupName) {
