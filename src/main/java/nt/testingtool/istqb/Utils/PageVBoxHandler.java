@@ -13,8 +13,6 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -22,15 +20,8 @@ import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.ImageWriteException;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import java.io.File;
 import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.stream.Collectors;
 
 import static nt.testingtool.istqb.Utils.EncryptDecryptBased64.encryptTextBase64WithSecretKey;
@@ -69,7 +60,7 @@ public class PageVBoxHandler {
 
     public static VBox setupHomePage() throws IOException, net.lingala.zip4j.exception.ZipException {
         utilQuestionHandler = initQuestionHandler();
-        isTestingEnd=false;
+        isTestingEnd = false;
         //Read zip data file
         utilQuestionHandler.readQuestionZipFile(getQuestionFileName(), getZipFilePassword());
         utilQuestionHandler.readAndSaveAllISTQBTypeInData(getZipFilePassword());
@@ -77,7 +68,7 @@ public class PageVBoxHandler {
         Pane blankPaneHeader = new Pane();
         double headerHeight = screenHeight / 8;
         blankPaneHeader.setPrefHeight(headerHeight);
-        blankPaneHeader.setBackground(new Background(new BackgroundFill(Paint.valueOf("#CACACA"), CornerRadii.EMPTY, Insets.EMPTY)));
+        blankPaneHeader.setBackground(grayBackGround);
         ImageView nashTechLogo = new ImageView();
         nashTechLogo.setFitWidth(headerHeight);
         nashTechLogo.setFitHeight(headerHeight);
@@ -118,7 +109,7 @@ public class PageVBoxHandler {
         blankPaneHeader.getChildren().add(infoBox);
         Pane blankPaneFooter = new Pane();
         blankPaneFooter.setPrefHeight(screenHeight / 8);
-        blankPaneFooter.setBackground(new Background(new BackgroundFill(Paint.valueOf("#CACACA"), CornerRadii.EMPTY, Insets.EMPTY)));
+        blankPaneFooter.setBackground(grayBackGround);
         Label welcomeTitle = new Label("Welcome To Internal ISTQB Knowledge Testing Tool");
         welcomeTitle.setPrefWidth(screenWidth / 3);
         welcomeTitle.setWrapText(true);
@@ -162,7 +153,7 @@ public class PageVBoxHandler {
 
         infoVbox.setAlignment(Pos.TOP_LEFT);
         infoVbox.getChildren().add(istqbDetailText);
-        infoVbox.setBackground(new Background(new BackgroundFill(Paint.valueOf("#CACACA"), CornerRadii.EMPTY, Insets.EMPTY)));
+        infoVbox.setBackground(grayBackGround);
         VBox.setMargin(istqbDetailText, new Insets(5, 0, 0, 5));
 
         istqbInformationHBox.getChildren().add(infoVbox);
@@ -174,7 +165,11 @@ public class PageVBoxHandler {
         selectTestingTypeComboBox.setStyle("-fx-font-size: 16");
         selectTestingTypeComboBox.setOnAction(event -> {
             setQuestionGroupName((String) selectTestingTypeComboBox.getValue());
-            istqbDetailText.setText(selectTestingTypeComboBox.getValue().toString() + "\nNumber of Question: 40\nPassing Score (at least 65%): 26\nTesting Time: 60 minutes\n" +
+            updateISTQBTypeInformation(getQuestionGroupName());
+            istqbDetailText.setText(getQuestionGroupShortName() + "\nNumber of Question: "
+                    + getNumberOfQuestionsPerQuestionBank() + "\n" +
+                    "Passing Score (at least 65%): " + getPassingScore() + "\n" +
+                    "Testing Time: " + getTestingMinutes() + " minutes\n" +
                     "Note that the score calculate based on number of correct questions!");
         });
         selectTestingTypeHBox.setAlignment(Pos.CENTER);
@@ -202,7 +197,7 @@ public class PageVBoxHandler {
                 } else {
                     try {
                         //Debug
-                        setTestingMinutes(1);
+//                        setTestingMinutes(1);
                         //End debug
                         changeStageAndScene(event, setupLayoutPageExam(), "Examination Page of: "
                                 + getQuestionGroupName());
@@ -212,7 +207,7 @@ public class PageVBoxHandler {
                 }
             } else {
                 AlertDisplay.displayMissingInformationAlert("Missing ISTQB Type"
-                ,"Please select ISTQB Type to start the test");
+                        , "Please select ISTQB Type to start the test");
             }
         });
         Button quitAppHomeButton = new Button("Quit");
@@ -257,21 +252,21 @@ public class PageVBoxHandler {
         Image certificateBackGround = new Image("C:\\Users\\linhpham\\IdeaProjects\\demo\\src\\main\\resources\\nt\\testingtool\\istqb\\imageAsset\\NTInternalCertificate.png");
         Label testUserNameCertificate = new Label(testUserName);
         testUserNameCertificate.setStyle("-fx-font-size: 48; -fx-font-weight: bold;-fx-text-alignment: center;");
-        testUserNameCertificate.setTextFill(Color.valueOf("#284977"));
+        testUserNameCertificate.setTextFill(darkBlueColor);
         testUserNameCertificate.setFont(new Font("Poppins Extrabold", 36));
         Label testTypeCertificate = new Label(getQuestionGroupShortName());
         testTypeCertificate.setStyle("-fx-font-size: 36; -fx-font-weight: bold;-fx-text-alignment: center;");
-        testTypeCertificate.setTextFill(Color.valueOf("#FA6070"));
+        testTypeCertificate.setTextFill(redNTColor);
         testTypeCertificate.setFont(new Font("Lato Bold", 36));
         if (testTypeCertificate.getText().length() > 44) {
             testTypeCertificate.setPrefWidth(screenWidth / 1.8);
         }
         testTypeCertificate.setWrapText(true);
         //Build
-        String encryptedText = encryptTextBase64WithSecretKey("This is a certificate to "+testUserName+" | " +
-                "Passed "+getQuestionGroupShortName()+" | Pass Score "+calculateTestingResult()
-                        +"/"+getNumberOfQuestionsPerQuestionBank()+" | Test Date: "+getTodayDate()
-                ,getZipFilePassword());
+        String encryptedText = encryptTextBase64WithSecretKey("This is a certificate to " + testUserName + " | " +
+                        "Passed " + getQuestionGroupShortName() + " | Pass Score " + calculateTestingResult()
+                        + "/" + getNumberOfQuestionsPerQuestionBank() + " | Test Date: " + getTodayDate()
+                , getZipFilePassword());
 //        //Debug
 //        String encryptedText = encryptTextBase64WithSecretKey("This is a certificate to: " + testUserName + " | " +
 //                        "Passed: " + getQuestionGroupShortName() + " | Pass Score: 30/"
@@ -306,17 +301,21 @@ public class PageVBoxHandler {
         VBox.setMargin(saveCertificateAsImage, new Insets(30, 5, 5, 25));
         VBox.setMargin(closeCertificatePage, new Insets(5, 5, 5, 25));
         saveCertificateAsImage.setOnAction(event -> {
-            captureAndSaveImageInContainer(certificateVbox, "abc");
-            convertPNGImageToJPG("abc");
+            String imageNamePrefix = testUserName.replace(" ", "_") + "_"
+                    + getQuestionGroupShortName().replace(" ", "_") + "_"
+                    + getTodayDateTime();
+            captureAndSaveImageInContainer(certificateVbox, imageNamePrefix + "_Processing");
+            convertPNGImageToJPG(imageNamePrefix + "_Processing");
             try {
-                File jpgImageFile = new File(getCurrentPath() + File.separator + "abc.jpg");
-                File destinationImage = new File(getCurrentPath() + File.separator + "abcWithTitle.jpg");
-                updateWindowsFields(jpgImageFile, destinationImage, encryptedText);
-                String imageTitle = readTitleInMetadataOfJpgImage(destinationImage);
-                System.out.println(EncryptDecryptBased64.decryptedBase64TextWithSecretKey(imageTitle, "123"));
-            } catch (IOException | ImageWriteException | ImageReadException | InvalidAlgorithmParameterException |
-                     NoSuchPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException |
-                     InvalidKeySpecException | BadPaddingException | InvalidKeyException e) {
+                File jpgImageFile = new File(getCurrentPath() + File.separator + imageNamePrefix + "_Processing.jpg");
+                File pngImageFile = new File(getCurrentPath() + File.separator + imageNamePrefix + "_Processing.png");
+                File destinationImage = new File(getCurrentPath() + File.separator + imageNamePrefix + ".jpg");
+                updateImageJPGTitleMetadataFields(jpgImageFile, destinationImage, encryptedText);
+                pngImageFile.delete();
+                jpgImageFile.delete();
+//                String imageTitle = readTitleInMetadataOfJpgImage(destinationImage);
+//                System.out.println(EncryptDecryptBased64.decryptedBase64TextWithSecretKey(imageTitle, getZipFilePassword()));
+            } catch (IOException | ImageWriteException | ImageReadException e) {
                 throw new RuntimeException(e);
             }
         });
@@ -337,9 +336,10 @@ public class PageVBoxHandler {
         HBox creditHeader = new HBox();
         Label thanksLabel = new Label("Thank you to the effort of all members in the team!");
         thanksLabel.setStyle("-fx-font-size: 48; -fx-font-weight: bold;-fx-text-alignment: center;");
-        thanksLabel.setTextFill(Color.valueOf("#FA6070"));
+        thanksLabel.setTextFill(redNTColor);
         thanksLabel.setFont(new Font("Lato Bold", 48));
         Button creditPageReturnHome = new Button("Home");
+        creditPageReturnHome.setFont(toolFont);
         creditPageReturnHome.setOnAction(event -> {
             initSelectedAnwser();
             utilQuestionHandler.isFirstLoad = true;
@@ -353,7 +353,7 @@ public class PageVBoxHandler {
         creditHeader.setAlignment(Pos.CENTER_RIGHT);
         creditHeader.setPrefWidth(screenWidth);
         creditHeader.setPrefHeight(screenHeight / 8);
-        creditHeader.setBackground(new Background(new BackgroundFill(Paint.valueOf("#CACACA"), CornerRadii.EMPTY, Insets.EMPTY)));
+        creditHeader.setBackground(grayBackGround);
         creditHeader.getChildren().add(thanksLabel);
         creditHeader.getChildren().add(creditPageReturnHome);
         HBox.setMargin(creditPageReturnHome, new Insets(0, 20, 0, 100));
@@ -365,7 +365,7 @@ public class PageVBoxHandler {
         Label creatorName = new Label("Creator: LINH PHAM\n" +
                 "linh.pham@nashtechglobal.com");
         creatorName.setStyle("-fx-font-size: 36; -fx-font-weight: bold;-fx-text-alignment: center;");
-        creatorName.setTextFill(Color.valueOf("#284977"));
+        creatorName.setTextFill(darkBlueColor);
         creatorName.setFont(new Font("Poppins Extrabold", 36));
         creditCreator.getChildren().add(creatorName);
 
@@ -377,7 +377,7 @@ public class PageVBoxHandler {
                 "ANH NGUYEN TA TUYET\nAnh.NguyenTaTuyet@nashtechglobal.com\n\n" +
                 "TRAM NGUYEN PHUONG NGUYET\nTram.NguyenPhuongNguyet@nashtechglobal.com");
         dataCollectorTitle.setStyle("-fx-font-size: 36; -fx-font-weight: bold;-fx-text-alignment: center;");
-        dataCollectorTitle.setTextFill(Color.valueOf("#284977"));
+        dataCollectorTitle.setTextFill(darkBlueColor);
         dataCollectorTitle.setFont(new Font("Poppins Extrabold", 36));
         creditDataCollector.getChildren().add(dataCollectorTitle);
 
@@ -412,7 +412,7 @@ public class PageVBoxHandler {
             timerProgressBar.setProgress(1 - (double) seconds[0] / totalSeconds);
             if (seconds[0] < 0) {
                 getTimerTimeLine().stop();
-                isTestingEnd=true;
+                isTestingEnd = true;
                 disableAllAnswersInHBoxContainer();
                 assignAnswersDataFromClassToCheckBoxOrRadioButton(getCurrentPageIndex());
                 pagination.setCurrentPageIndex(getNumberOfQuestionsPerQuestionBank());
@@ -430,9 +430,11 @@ public class PageVBoxHandler {
 
         //Set up Pagination question pages
         pagination = new Pagination(getNumberOfQuestionsPerQuestionBank());
+        pagination.setMaxPageIndicatorCount(getNumberOfQuestionsPerQuestionBank());
         pagination.getStyleClass().add(Pagination.STYLE_CLASS_BULLET);
         pagination.setPageFactory(TestingToolUtils::getQuestionPages);
-        pagination.setMaxPageIndicatorCount(40);
+        pagination.setMaxPageIndicatorCount(maxQuestionPerPagination);
+        pagination.setPrefWidth(getObjectWidthInScrollPane()+30);
         pagination.setScaleX(1.7);
         pagination.setScaleY(1.7);
         HBox questionPane = new HBox(pagination);
@@ -450,14 +452,15 @@ public class PageVBoxHandler {
     public static VBox setupSummaryPage() {
         Pane blankPaneHeader = new Pane();
         blankPaneHeader.setPrefHeight(screenHeight / 4);
-        blankPaneHeader.setBackground(new Background(new BackgroundFill(Paint.valueOf("#CACACA"), CornerRadii.EMPTY, Insets.EMPTY)));
+        blankPaneHeader.setBackground(grayBackGround);
         Pane blankPaneFooter = new Pane();
         blankPaneFooter.setPrefHeight(screenHeight / 2);
-        blankPaneFooter.setBackground(new Background(new BackgroundFill(Paint.valueOf("#CACACA"), CornerRadii.EMPTY, Insets.EMPTY)));
+        blankPaneFooter.setBackground(grayBackGround);
         Label resultTitle = new Label("Your result is:");
         resultTitle.setStyle("-fx-font-size: 48;");
         int correctAnswer = calculateTestingResult();
-        String passFailString = determinePassOrFail(correctAnswer);
+//        String passFailString = determinePassOrFail(correctAnswer);
+        String passFailString = "Passed";
         Label resultPassFail = new Label(passFailString);
         if (passFailString.equals("Passed")) {
             resultPassFail.setStyle("-fx-text-fill: #5E8C5D; -fx-font-size: 72; -fx-font-weight: bold;");
@@ -475,26 +478,22 @@ public class PageVBoxHandler {
         returnToHomeButton.setOnAction(event -> {
             initSelectedAnwser();
             utilQuestionHandler.isFirstLoad = true;
-
             try {
                 changeStageAndScene(event, setupHomePage(), "Home Page");
             } catch (IOException | ZipException e) {
                 throw new RuntimeException(e);
             }
-
         });
         Button startNewTestButton = new Button("Start New Test");
         startNewTestButton.setOnAction(event -> {
-
             initSelectedAnwser();
             try {
-                isTestingEnd=false;
+                isTestingEnd = false;
                 changeStageAndScene(event, setupLayoutPageExam()
                         , "Examination Page of: " + selectTestingTypeComboBox.getValue());
             } catch (IOException | ZipException e) {
                 throw new RuntimeException(e);
             }
-
         });
         startNewTestButton.setFont(toolFont);
         Button quitAppButton = new Button("Quit");
@@ -518,6 +517,23 @@ public class PageVBoxHandler {
         HBox.setMargin(startNewTestButton, new Insets(10, 10, 10, 10));
         HBox.setMargin(quitAppButton, new Insets(10, 10, 10, 30));
 
+        //Set up get certificate button
+        Button getCertificateButton = new Button("Get Your CERTIFICATION Here!");
+        getCertificateButton.setFont(toolFont);
+        getCertificateButton.setVisible(false);
+        if (passFailString.equals("Passed")) getCertificateButton.setVisible(true);
+        getCertificateButton.setOnAction(event -> {
+            try {
+                openNewStageAndScene(setupCertificatePage(), "Certificate Page");
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        HBox summaryCertificateCommandContainer = new HBox();
+        summaryCertificateCommandContainer.setPrefWidth(screenWidth);
+        summaryCertificateCommandContainer.setAlignment(Pos.CENTER);
+        summaryCertificateCommandContainer.getChildren().add(getCertificateButton);
+
         //Set up Result VBox
         VBox resultVBox = new VBox();
         resultVBox.setPrefWidth(screenWidth);
@@ -528,6 +544,7 @@ public class PageVBoxHandler {
         resultVBox.getChildren().add(resultDashLine);
         resultVBox.getChildren().add(resultActualScore);
         resultVBox.getChildren().add(summaryCommandContainer);
+        resultVBox.getChildren().add(summaryCertificateCommandContainer);
         resultVBox.getChildren().add(blankPaneFooter);
 
         return resultVBox;

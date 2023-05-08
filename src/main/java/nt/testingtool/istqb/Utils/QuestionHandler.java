@@ -76,6 +76,7 @@ public class QuestionHandler {
         questionObjects = new Object[getMaxNumberOfAnswerElementsInQuestionBank()];
         answerCheckBoxes = new CheckBox[getMaxNumberOfAnswerElementsInQuestionBank()];
         answerRadioButtons = new RadioButton[getMaxNumberOfAnswerElementsInQuestionBank()];
+        answerRadioGroup = new ToggleGroup[getNumberOfQuestionsPerQuestionBank()];
         answerRadioGroup[pageIndex] = new ToggleGroup();
         answerHBoxContainers = new HBox[getMaxNumberOfAnswerElementsInQuestionBank() / 2];
         questionStringTitle = new String[getMaxNumberOfAnswerElementsInQuestionBank()];
