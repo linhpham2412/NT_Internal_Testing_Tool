@@ -41,7 +41,7 @@ public class TestingToolUtils {
     }
 
     public static String determinePassOrFail(int actualResult) {
-        return (actualResult < 26) ? "Failed" : "Passed";
+        return (actualResult < getPassingScore()) ? "Failed" : "Passed";
     }
 
     static String calculateTimeLeft(int[] seconds) {
@@ -365,10 +365,19 @@ public class TestingToolUtils {
         return formatter.format (now);
     }
 
+    public static String getTodayDateTime(){
+        // Get the current date and time
+        LocalDateTime now = LocalDateTime.now ();
+
+        // Format the date and time
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern ("MMM_dd_yyyy_HH_mm_ss");
+        return formatter.format (now);
+    }
+
     public static void disableAllAnswersInHBoxContainer(){
         try {
             Arrays.stream(answerHBoxContainers).forEach(hBox -> hBox.setDisable(true));
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
     }
 }

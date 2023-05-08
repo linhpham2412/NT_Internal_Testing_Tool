@@ -13,8 +13,6 @@ import org.apache.commons.imaging.formats.jpeg.exif.ExifRewriter;
 import org.apache.commons.imaging.formats.tiff.TiffField;
 import org.apache.commons.imaging.formats.tiff.TiffImageMetadata;
 import org.apache.commons.imaging.formats.tiff.constants.MicrosoftTagConstants;
-import org.apache.commons.imaging.formats.tiff.taginfos.TagInfo;
-import org.apache.commons.imaging.formats.tiff.taginfos.TagInfoXpString;
 import org.apache.commons.imaging.formats.tiff.write.TiffOutputDirectory;
 import org.apache.commons.imaging.formats.tiff.write.TiffOutputSet;
 
@@ -23,7 +21,6 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static nt.testingtool.istqb.Utils.ProjectConfiguration.getCurrentPath;
 
@@ -32,7 +29,6 @@ public class ImageCaptureHandler {
         try {
             File imageToBeConvert = new File(getCurrentPath() + File.separator + imageName + ".png");
             BufferedImage input = ImageIO.read(imageToBeConvert);
-            System.out.println("input image type=" + input.getType());
             int width = input.getWidth();
             int height = input.getHeight();
             BufferedImage output = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
@@ -40,7 +36,6 @@ public class ImageCaptureHandler {
             input.getRGB(0, 0, width, height, px, 0, width);
             output.setRGB(0, 0, width, height, px, 0, width);
             ImageIO.write(output, "jpg", new File(getCurrentPath() + File.separator + imageName + ".jpg"));
-            imageToBeConvert.delete();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -66,11 +61,10 @@ public class ImageCaptureHandler {
         Optional<TiffField> imageTitle = imageTiffFields.stream()
                 .filter(tiffField -> tiffField.getTagName().matches("XPTitle"))
                 .findFirst();
-        System.out.println(imageTitle.get().getValue().toString());
         return imageTitle.get().getValue().toString();
     }
 
-    public static boolean updateWindowsFields(final File jpegImageFile, final File dst, String titleValue)
+    public static boolean updateImageJPGTitleMetadataFields(final File jpegImageFile, final File dst, String titleValue)
             throws IOException, ImageReadException, ImageWriteException {
 
         try (FileOutputStream fos = new FileOutputStream(dst);
@@ -99,7 +93,6 @@ public class ImageCaptureHandler {
 
             new ExifRewriter().updateExifMetadataLossless(jpegImageFile, os,
                     outputSet);
-            jpegImageFile.delete();
             return true;
         } catch (Exception e) {
             return false;
