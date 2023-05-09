@@ -20,10 +20,18 @@ import net.lingala.zip4j.exception.ZipException;
 import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.ImageWriteException;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.io.File;
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.stream.Collectors;
 
+import static nt.testingtool.istqb.Utils.EncryptDecryptBased64.decryptedBase64TextWithSecretKey;
 import static nt.testingtool.istqb.Utils.EncryptDecryptBased64.encryptTextBase64WithSecretKey;
 import static nt.testingtool.istqb.Utils.ImageCaptureHandler.*;
 import static nt.testingtool.istqb.Utils.ProjectConfiguration.*;
@@ -58,9 +66,13 @@ public class PageVBoxHandler {
         newStage.show();
     }
 
-    public static VBox setupHomePage() throws IOException, net.lingala.zip4j.exception.ZipException {
+    public static VBox setupHomePage() throws IOException, net.lingala.zip4j.exception.ZipException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
         utilQuestionHandler = initQuestionHandler();
         isTestingEnd = false;
+        File projectContentFile = new File(getCurrentPath() + File.separator + "ProjectContentEncrypted.txt");
+        String[] readValue = readAndDeryptPasswordAndFileNameDataFromText(projectContentFile);
+        setQuestionFileName(readValue[1]);
+        setZipFilePassword(readValue[0]);
         //Read zip data file
         utilQuestionHandler.readQuestionZipFile(getQuestionFileName(), getZipFilePassword());
         utilQuestionHandler.readAndSaveAllISTQBTypeInData(getZipFilePassword());
@@ -262,25 +274,22 @@ public class PageVBoxHandler {
             testTypeCertificate.setPrefWidth(screenWidth / 1.8);
         }
         testTypeCertificate.setWrapText(true);
-        //Build
+        Label testDateCertificate = new Label("Test Date: " + getTodayDate());
+        testDateCertificate.setStyle("-fx-font-size: 18; -fx-font-weight: bold;-fx-text-alignment: center;");
+        testDateCertificate.setTextFill(darkBlueColor);
+        testDateCertificate.setFont(new Font("Lato Bold", 18));
         String encryptedText = encryptTextBase64WithSecretKey("This is a certificate to " + testUserName + " | " +
                         "Passed " + getQuestionGroupShortName() + " | Pass Score " + calculateTestingResult()
                         + "/" + getNumberOfQuestionsPerQuestionBank() + " | Test Date: " + getTodayDate()
-                , getZipFilePassword());
-//        //Debug
-//        String encryptedText = encryptTextBase64WithSecretKey("This is a certificate to: " + testUserName + " | " +
-//                        "Passed: " + getQuestionGroupShortName() + " | Pass Score: 30/"
-//                        + getNumberOfQuestionsPerQuestionBank() + " | Test Date: " + getTodayDate()
-//                , getZipFilePassword());
-//        System.out.println("This is a certificate to: " + testUserName + " | " +
-//                "Passed: " + getQuestionGroupShortName() + " | Pass Score: 30/"
-//                + getMaxNumberOfAnswerElementsInQuestionBank() + " | Test Date: " + getTodayDate());
+                , getEncryptDecryptKey());
         VBox certificateVbox = new VBox();
         certificateVbox.setAlignment(Pos.TOP_CENTER);
         certificateVbox.setPrefSize(screenWidth / 1.2, screenHeight);
         certificateVbox.getChildren().add(testTypeCertificate);
         certificateVbox.getChildren().add(testUserNameCertificate);
+        certificateVbox.getChildren().add(testDateCertificate);
         VBox.setMargin(testTypeCertificate, new Insets(screenHeight / 3, 0, 0, 0));
+        VBox.setMargin(testDateCertificate, new Insets(screenHeight / 6, 0, 0, 0));
         if (testTypeCertificate.getText().length() < 44) {
             VBox.setMargin(testUserNameCertificate, new Insets(screenHeight / 6.5, 0, 0, 0));
         } else {
@@ -313,8 +322,6 @@ public class PageVBoxHandler {
                 updateImageJPGTitleMetadataFields(jpgImageFile, destinationImage, encryptedText);
                 pngImageFile.delete();
                 jpgImageFile.delete();
-//                String imageTitle = readTitleInMetadataOfJpgImage(destinationImage);
-//                System.out.println(EncryptDecryptBased64.decryptedBase64TextWithSecretKey(imageTitle, getZipFilePassword()));
             } catch (IOException | ImageWriteException | ImageReadException e) {
                 throw new RuntimeException(e);
             }
@@ -345,7 +352,9 @@ public class PageVBoxHandler {
             utilQuestionHandler.isFirstLoad = true;
             try {
                 changeStageAndScene(event, setupHomePage(), "Home Page");
-            } catch (IOException | net.lingala.zip4j.exception.ZipException e) {
+            } catch (IOException | ZipException | InvalidAlgorithmParameterException | NoSuchPaddingException |
+                     IllegalBlockSizeException | NoSuchAlgorithmException | InvalidKeySpecException |
+                     BadPaddingException | InvalidKeyException e) {
                 throw new RuntimeException(e);
             }
         });
@@ -434,7 +443,7 @@ public class PageVBoxHandler {
         pagination.getStyleClass().add(Pagination.STYLE_CLASS_BULLET);
         pagination.setPageFactory(TestingToolUtils::getQuestionPages);
         pagination.setMaxPageIndicatorCount(maxQuestionPerPagination);
-        pagination.setPrefWidth(getObjectWidthInScrollPane()+30);
+        pagination.setPrefWidth(getObjectWidthInScrollPane() + 30);
         pagination.setScaleX(1.7);
         pagination.setScaleY(1.7);
         HBox questionPane = new HBox(pagination);
@@ -480,7 +489,9 @@ public class PageVBoxHandler {
             utilQuestionHandler.isFirstLoad = true;
             try {
                 changeStageAndScene(event, setupHomePage(), "Home Page");
-            } catch (IOException | ZipException e) {
+            } catch (IOException | ZipException | InvalidAlgorithmParameterException | NoSuchPaddingException |
+                     IllegalBlockSizeException | NoSuchAlgorithmException | InvalidKeySpecException |
+                     BadPaddingException | InvalidKeyException e) {
                 throw new RuntimeException(e);
             }
         });
@@ -546,6 +557,122 @@ public class PageVBoxHandler {
         resultVBox.getChildren().add(summaryCommandContainer);
         resultVBox.getChildren().add(summaryCertificateCommandContainer);
         resultVBox.getChildren().add(blankPaneFooter);
+
+        return resultVBox;
+    }
+
+    public static VBox setupManagePage() throws IOException {
+        //Set up layout
+        HBox layoutHBox = new HBox();
+        VBox imagePaneContainer = new VBox();
+        imagePaneContainer.setAlignment(Pos.CENTER);
+        imagePaneContainer.setPrefWidth(screenWidth / 2);
+        imagePaneContainer.setPrefHeight(screenHeight);
+        imagePaneContainer.setBackground(grayBackGround);
+        TextArea textToProcessArea = new TextArea();
+        textToProcessArea.setWrapText(true);
+        textToProcessArea.setPrefSize(screenWidth / 2, screenHeight / 2.5);
+        textToProcessArea.setFont(toolFont);
+        TextArea textConvertedArea = new TextArea();
+        textConvertedArea.setWrapText(true);
+        textConvertedArea.setPrefSize(screenWidth / 2, screenHeight / 2.5);
+        textConvertedArea.setFont(toolFont);
+        Button imageSelector = new Button("Open Image");
+        imageSelector.setFont(toolFont);
+        imageSelector.setOnAction(event -> {
+            try {
+                fileChooser.setInitialDirectory(new File(getCurrentPath()));
+            } catch (IOException ignored) {
+            }
+            loadedImageFile = fileChooser.showOpenDialog(null);
+            ImageView imageToCheck = new ImageView(loadedImageFile.toURI().toString());
+            imageToCheck.setFitWidth(screenWidth / 2);
+            imageToCheck.setFitHeight(screenHeight / 1.5);
+            if (imagePaneContainer.getChildren().size() > 1) {
+                imagePaneContainer.getChildren().remove(imagePaneContainer.getChildren().size() - 1);
+            }
+            imagePaneContainer.getChildren().add(imageToCheck);
+
+            try {
+                textToProcessArea.setText(readTitleInMetadataOfJpgImage(loadedImageFile));
+                textConvertedArea.setText(decryptedBase64TextWithSecretKey(textToProcessArea.getText(), getEncryptDecryptKey()));
+            } catch (IOException | ImageReadException | InvalidAlgorithmParameterException | NoSuchPaddingException |
+                     IllegalBlockSizeException | NoSuchAlgorithmException | InvalidKeySpecException |
+                     BadPaddingException |
+                     InvalidKeyException ignored) {
+            }
+        });
+        imagePaneContainer.getChildren().add(imageSelector);
+        VBox.setMargin(imageSelector, new Insets(10, 10, 10, 10));
+
+        VBox textPaneContainer = new VBox();
+        Label textToProcess = new Label("Text To Process:");
+        textToProcess.setFont(toolFont);
+        HBox textConvertCommandContainer = new HBox();
+        Button encryptButton = new Button("Encrypt");
+        encryptButton.setFont(toolFont);
+        Button decryptButton = new Button("Decrypt");
+        decryptButton.setFont(toolFont);
+        Button clearButton = new Button("Clear");
+        clearButton.setFont(toolFont);
+        Button generatePasswordButton = new Button("Generate Password File");
+        generatePasswordButton.setFont(toolFont);
+        textConvertCommandContainer.setAlignment(Pos.CENTER);
+        textConvertCommandContainer.getChildren().add(generatePasswordButton);
+        textConvertCommandContainer.getChildren().add(encryptButton);
+        textConvertCommandContainer.getChildren().add(decryptButton);
+        textConvertCommandContainer.getChildren().add(clearButton);
+        HBox.setMargin(encryptButton, new Insets(5, 5, 5, 5));
+        HBox.setMargin(decryptButton, new Insets(5, 5, 5, 5));
+        HBox.setMargin(clearButton, new Insets(5, 5, 5, 5));
+        HBox.setMargin(generatePasswordButton, new Insets(5, 5, 5, 5));
+        Label textConverted = new Label("Result Text:");
+        textConverted.setFont(toolFont);
+        textPaneContainer.getChildren().add(textToProcess);
+        textPaneContainer.getChildren().add(textToProcessArea);
+        textPaneContainer.getChildren().add(textConvertCommandContainer);
+        textPaneContainer.getChildren().add(textConverted);
+        textPaneContainer.getChildren().add(textConvertedArea);
+        VBox.setMargin(textToProcess, new Insets(5, 5, 5, 5));
+        VBox.setMargin(textConverted, new Insets(5, 5, 5, 5));
+        VBox.setMargin(textConvertedArea, new Insets(5, 5, 5, 5));
+        VBox.setMargin(textToProcessArea, new Insets(5, 5, 5, 5));
+        encryptButton.setOnAction(event -> {
+            try {
+                textConvertedArea.setText(encryptTextBase64WithSecretKey(textToProcessArea.getText(), getEncryptDecryptKey()));
+            } catch (Exception ignored) {
+            }
+        });
+        decryptButton.setOnAction(event -> {
+            try {
+                textConvertedArea.setText(decryptedBase64TextWithSecretKey(textToProcessArea.getText(), getEncryptDecryptKey()));
+            } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidAlgorithmParameterException |
+                     NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException |
+                     InvalidKeyException ignored) {
+            }
+        });
+        clearButton.setOnAction(event -> {
+            textToProcessArea.setText("");
+            textConvertedArea.setText("");
+        });
+        generatePasswordButton.setOnAction(event -> {
+            String projectContent = "Project content=| " + textToProcessArea.getText() + "|";
+            try {
+                textConvertedArea.setText(encryptTextBase64WithSecretKey(projectContent, getEncryptDecryptKey()));
+                File passwordTextFile = new File(getCurrentPath() + File.separator + "ProjectContentEncrypted.txt");
+                writeDataToTextFile(passwordTextFile, textConvertedArea.getText());
+            } catch (Exception ignored) {
+            }
+        });
+
+        layoutHBox.getChildren().add(imagePaneContainer);
+        layoutHBox.getChildren().add(textPaneContainer);
+
+        //Set up Result VBox
+        VBox resultVBox = new VBox();
+        resultVBox.setPrefWidth(screenWidth);
+        resultVBox.setAlignment(Pos.CENTER);
+        resultVBox.getChildren().add(layoutHBox);
 
         return resultVBox;
     }

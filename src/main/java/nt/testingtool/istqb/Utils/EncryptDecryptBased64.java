@@ -13,15 +13,17 @@ import java.security.spec.KeySpec;
 import java.util.Arrays;
 import java.util.Base64;
 
+import static nt.testingtool.istqb.Utils.ProjectConfiguration.getEncryptDecryptSalt;
+
 public class EncryptDecryptBased64 {
     public static String encryptTextBase64WithSecretKey(String textToEncrypt, String personKey) throws Exception {
         IvParameterSpec ivParameterSpec = generateIv();
-        SecretKey personalKey = getKeyFromPassword(personKey, "123456789");
+        SecretKey personalKey = getKeyFromPassword(personKey, getEncryptDecryptSalt());
         return encrypt("AES/CBC/PKCS5Padding", textToEncrypt, personalKey, ivParameterSpec);
     }
 
     public static String decryptedBase64TextWithSecretKey(String encryptedText, String personKey) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
-        SecretKey personalKey = getKeyFromPassword(personKey, "123456789");
+        SecretKey personalKey = getKeyFromPassword(personKey, getEncryptDecryptSalt());
         return decrypt("AES/CBC/PKCS5Padding", encryptedText, personalKey, generateIv());
     }
 
