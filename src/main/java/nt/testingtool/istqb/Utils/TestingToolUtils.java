@@ -10,10 +10,19 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Paint;
 import nt.testingtool.istqb.datamodel.QuestionDataModel;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import java.io.*;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Scanner;
 
 import static nt.testingtool.istqb.Utils.PageVBoxHandler.*;
 import static nt.testingtool.istqb.Utils.ProjectConfiguration.*;
@@ -27,8 +36,9 @@ public class TestingToolUtils {
         return currentPageIndex;
     }
 
-    static int currentPageIndex=0;
+    static int currentPageIndex = 0;
     static boolean isTestingEnd = false;
+    static File loadedImageFile = null;
 
     public static int calculateTestingResult() {
         int calculatedCorrectAnswers = 0;
@@ -64,7 +74,7 @@ public class TestingToolUtils {
 
     public static ScrollPane getQuestionPages(int pageIndex) {
         //setup and clean up data
-        currentPageIndex=pageIndex;
+        currentPageIndex = pageIndex;
         utilQuestionHandler.initQuestionElements(pageIndex);
         //map question data to local variables
         mapValueFromTestingQuestionToLocalVariablesByPageIndex(pageIndex);
@@ -138,19 +148,18 @@ public class TestingToolUtils {
             try {
                 String remainingAnswers = checkUnAnsweredQuestions();
                 AlertDisplay.displayMissingInformationAlert("Unfinished Answers Remain! \n" +
-                        "Click on Summary Page button to skip this check! \n"+
-                        "Please recheck these questions below: ",remainingAnswers);
+                        "Click on Summary Page button to skip this check! \n" +
+                        "Please recheck these questions below: ", remainingAnswers);
             } catch (Exception e) {
                 changeStageAndScene(event, setupSummaryPage(), "Summary Page");
             }
         });
         summaryPageButton.setOnAction(event -> {
-            isTestingEnd=false;
-            changeStageAndScene(event,setupSummaryPage(),"Summary Page");
+            isTestingEnd = false;
+            changeStageAndScene(event, setupSummaryPage(), "Summary Page");
         });
         questionContainer.getChildren().add(navigationContainer);
     }
-
 
 
     private static void mapValueFromTestingQuestionToLocalVariablesByPageIndex(int questionIndex) {
@@ -307,9 +316,9 @@ public class TestingToolUtils {
             }
             utilQuestionHandler.answerCheckBoxes[elementIndex].setOnAction(event -> {
                 if (utilQuestionHandler.answerCheckBoxes[elementIndex].isSelected()) {
-                    setSelectedAnswer(pageIndex,elementIndex,1);
+                    setSelectedAnswer(pageIndex, elementIndex, 1);
                 } else {
-                    setSelectedAnswer(pageIndex,elementIndex,0);
+                    setSelectedAnswer(pageIndex, elementIndex, 0);
                 }
             });
         }
@@ -334,7 +343,7 @@ public class TestingToolUtils {
                 setSelectedAnswerElementArray(pageIndex,
                         Arrays.stream(utilQuestionHandler.selectedAnswer[pageIndex]).map(e -> e = 0).toArray());
                 if (utilQuestionHandler.answerRadioButtons[elementIndex].isSelected()) {
-                    setSelectedAnswer(pageIndex,elementIndex,1);
+                    setSelectedAnswer(pageIndex, elementIndex, 1);
                 }
             });
         }
@@ -356,28 +365,53 @@ public class TestingToolUtils {
         return questionContainer;
     }
 
-    public static String getTodayDate(){
+    public static String getTodayDate() {
         // Get the current date and time
-        LocalDateTime now = LocalDateTime.now ();
+        LocalDateTime now = LocalDateTime.now();
 
         // Format the date and time
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern ("MMM dd, yyyy");
-        return formatter.format (now);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy");
+        return formatter.format(now);
     }
 
-    public static String getTodayDateTime(){
+    public static String getTodayDateTime() {
         // Get the current date and time
-        LocalDateTime now = LocalDateTime.now ();
+        LocalDateTime now = LocalDateTime.now();
 
         // Format the date and time
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern ("MMM_dd_yyyy_HH_mm_ss");
-        return formatter.format (now);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM_dd_yyyy_HH_mm_ss");
+        return formatter.format(now);
     }
 
-    public static void disableAllAnswersInHBoxContainer(){
+    public static void disableAllAnswersInHBoxContainer() {
         try {
             Arrays.stream(answerHBoxContainers).forEach(hBox -> hBox.setDisable(true));
         } catch (Exception ignored) {
         }
+    }
+
+    public static void writeDataToTextFile(File textFile, String valueToWrite) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(textFile));
+        writer.write(valueToWrite);
+        writer.close();
+    }
+
+    public static String[] readAndDeryptPasswordAndFileNameDataFromText(File fileToRead) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
+        String valueToRead = "";
+        try {
+            Scanner scanner = new Scanner(fileToRead);
+            while (scanner.hasNextLine()) {
+                valueToRead = scanner.nextLine();
+            }
+            scanner.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        valueToRead = EncryptDecryptBased64.decryptedBase64TextWithSecretKey(valueToRead,getEncryptDecryptKey());
+        String[] splitedValue = valueToRead.split("(?:\\|)");
+        String[] readValue = new String[2];
+        readValue[0] = splitedValue[1].substring(splitedValue[1].indexOf(":") + 1, splitedValue[1].length()).trim();
+        readValue[1] = splitedValue[2].substring(splitedValue[2].indexOf(":") + 1, splitedValue[2].length()).trim();
+        return readValue;
     }
 }

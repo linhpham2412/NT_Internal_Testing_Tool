@@ -8,6 +8,7 @@ import javafx.scene.layout.CornerRadii;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
+import javafx.stage.FileChooser;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -18,6 +19,8 @@ public class ProjectConfiguration {
     public static double screenHeight = 850;
     private static String questionFileName = "ISTQB_QuestionsBank";
     private static String zipFilePassword = "123";
+    private static final String encryptDecryptSalt = "13260779";
+    private static final String encryptDecryptKey = "q>CO((oQKm9Pl^aR7UV.a3wx$6kX-D";
     private static String testUserName;
     //set up testing time
     private static int testingMinutes = 60;
@@ -35,7 +38,8 @@ public class ProjectConfiguration {
 
     private static int passingScore = 26;
     private static String questionGroupName = "";
-    private final String currentPath = null;
+//    private final String currentPath = null;
+    public static FileChooser fileChooser = new FileChooser();
 
     public static double getObjectWidthInScrollPane() {
         return objectWidthInScrollPane;
@@ -173,5 +177,13 @@ public class ProjectConfiguration {
                 setTestingMinutes(90);
                 break;
         }
+    }
+
+    public static String getEncryptDecryptSalt() {
+        return encryptDecryptSalt;
+    }
+
+    public static String getEncryptDecryptKey() {
+        return encryptDecryptKey;
     }
 }
