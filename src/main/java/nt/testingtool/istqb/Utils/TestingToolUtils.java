@@ -224,18 +224,36 @@ public class TestingToolUtils {
         }
     }
 
-    private static void checkImageSizeAndResizeIfLongerThanScreenSize(Double maxWidth, Double maxHeight, ImageView imageToCheck) {
+    private static void checkImageSizeAndResizeIfLongerThanScreenSize(Double maxWidth, Double maxHeight, ImageView imageViewToCheck) {
+        double imageWidth = imageViewToCheck.getImage().getWidth();
+        double imageHeight = imageViewToCheck.getImage().getHeight();
+        imageViewToCheck.setFitWidth(imageWidth);
+        imageViewToCheck.setFitHeight(imageHeight);
+        if (imageWidth > maxWidth) {
+            imageViewToCheck = resizeBasedOnWidth(imageViewToCheck, maxWidth);
+        }
+        double imageHeightAfterFirstResize = imageViewToCheck.getFitHeight();
+        if (imageHeightAfterFirstResize > maxHeight) {
+            imageViewToCheck = resizeBasedOnHeight(imageViewToCheck, maxHeight);
+        }
+    }
+
+    private static ImageView resizeBasedOnWidth(ImageView imageToCheck, double maxWidth) {
         double imageWidth = imageToCheck.getImage().getWidth();
         double imageHeight = imageToCheck.getImage().getHeight();
-        if (imageWidth > maxWidth) {
-            double imageHeightShouldReduce = ((imageWidth - maxWidth) / imageWidth) * imageHeight;
-            imageToCheck.setFitWidth(maxWidth);
-            imageToCheck.setFitHeight(imageHeight - imageHeightShouldReduce);
-        } else if (imageHeight > maxHeight) {
-            double imageWidthShouldReduce = ((imageHeight - maxHeight) / imageHeight) * imageWidth;
-            imageToCheck.setFitHeight(maxHeight);
-            imageToCheck.setFitWidth(imageWidth - imageWidthShouldReduce);
-        }
+        double imageHeightShouldReduce = ((imageWidth - maxWidth) / imageWidth) * imageHeight;
+        imageToCheck.setFitWidth(maxWidth);
+        imageToCheck.setFitHeight(imageHeight - imageHeightShouldReduce);
+        return imageToCheck;
+    }
+
+    private static ImageView resizeBasedOnHeight(ImageView imageToCheck, double maxHeight) {
+        double imageWidth = imageToCheck.getFitWidth();
+        double imageHeight = imageToCheck.getFitHeight();
+        double imageWidthShouldReduce = ((imageHeight - maxHeight) / imageHeight) * imageWidth;
+        imageToCheck.setFitHeight(maxHeight);
+        imageToCheck.setFitWidth(imageWidth - imageWidthShouldReduce);
+        return imageToCheck;
     }
 
     private static void renderQuestionGridTable(GridPane gridPane, String[] tableRowData) {
@@ -407,7 +425,7 @@ public class TestingToolUtils {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        valueToRead = EncryptDecryptBased64.decryptedBase64TextWithSecretKey(valueToRead,getEncryptDecryptKey());
+        valueToRead = EncryptDecryptBased64.decryptedBase64TextWithSecretKey(valueToRead, getEncryptDecryptKey());
         String[] splitedValue = valueToRead.split("(?:\\|)");
         String[] readValue = new String[2];
         readValue[0] = splitedValue[1].substring(splitedValue[1].indexOf(":") + 1, splitedValue[1].length()).trim();
