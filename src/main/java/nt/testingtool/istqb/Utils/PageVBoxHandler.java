@@ -6,6 +6,7 @@ import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.NodeOrientation;
+import javafx.geometry.Point3D;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -13,6 +14,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -372,29 +374,104 @@ public class PageVBoxHandler {
         creditCreator.setPrefWidth(screenWidth);
         creditCreator.setPrefHeight(screenHeight / 8);
         Label creatorName = new Label("Creator: LINH PHAM\n" +
-                "linh.pham@nashtechglobal.com");
-        creatorName.setStyle("-fx-font-size: 36; -fx-font-weight: bold;-fx-text-alignment: center;");
+                "Linh.Pham@nashtechglobal.com");
+        creatorName.setStyle("-fx-font-size: 34; -fx-font-weight: bold;-fx-text-alignment: center;");
         creatorName.setTextFill(darkBlueColor);
-        creatorName.setFont(new Font("Poppins Extrabold", 36));
+        creatorName.setFont(new Font("Poppins Extrabold", 34));
+        ImageView creatorImg = new ImageView();
+        addImageIntoColorRoundBorder(creatorImg
+                ,new Image("C:\\Users\\linhpham\\IdeaProjects\\demo\\src\\main\\resources\\nt\\testingtool\\" +
+                        "istqb\\imageAsset\\LinhPham.jpeg"), Color.BLUE);
+        scaleDownImgWithPercentage(creatorImg,20);
+        creatorImg.setRotationAxis(new Point3D(0,0,1));
+        creatorImg.setRotate(10);
+        creditCreator.getChildren().add(creatorImg);
         creditCreator.getChildren().add(creatorName);
 
-        HBox creditDataCollector = new HBox();
-        creditDataCollector.setAlignment(Pos.CENTER);
-        creditDataCollector.setPrefWidth(screenWidth);
-        Label dataCollectorTitle = new Label("\nData Collector:\n" +
-                "ANH TRAN THI HUYNH\nAnh.TranThiHuynh@nashtechglobal.com\n\n" +
-                "ANH NGUYEN TA TUYET\nAnh.NguyenTaTuyet@nashtechglobal.com\n\n" +
-                "TRAM NGUYEN PHUONG NGUYET\nTram.NguyenPhuongNguyet@nashtechglobal.com");
-        dataCollectorTitle.setStyle("-fx-font-size: 36; -fx-font-weight: bold;-fx-text-alignment: center;");
-        dataCollectorTitle.setTextFill(darkBlueColor);
-        dataCollectorTitle.setFont(new Font("Poppins Extrabold", 36));
-        creditDataCollector.getChildren().add(dataCollectorTitle);
+        HBox creditData1 = new HBox();
+        creditData1.setAlignment(Pos.CENTER);
+        creditData1.setPrefWidth(screenWidth);
+//        creditData1.setPrefHeight(screenHeight / 8);
+        Label data1Name = new Label("Data Collectors:\nANH TRAN THI HUYNH\n" +
+                "Anh.TranThiHuynh@nashtechglobal.com");
+        data1Name.setStyle("-fx-font-size: 30; -fx-font-weight: bold;-fx-text-alignment: center;");
+        data1Name.setTextFill(darkBlueColor);
+        data1Name.setFont(new Font("Poppins Extrabold", 30));
+        ImageView data1Img = new ImageView();
+        addImageIntoColorRoundBorder(data1Img
+                ,new Image("C:\\Users\\linhpham\\IdeaProjects\\demo\\src\\main\\resources\\nt\\testingtool\\" +
+                        "istqb\\imageAsset\\AnhTranThiHuynh.png"), Color.BLUEVIOLET);
+        scaleDownImgWithPercentage(data1Img,6);
+        data1Img.setRotationAxis(new Point3D(0,0,1));
+        data1Img.setRotate(-10);
+        creditData1.getChildren().add(data1Name);
+        creditData1.getChildren().add(data1Img);
+
+        HBox creditData2 = new HBox();
+        creditData2.setAlignment(Pos.CENTER);
+        creditData2.setPrefWidth(screenWidth);
+//        creditData1.setPrefHeight(screenHeight / 8);
+        Label data2Name = new Label("ANH NGUYEN TA TUYET\n" +
+                "Anh.NguyenTaTuyet@nashtechglobal.com");
+        data2Name.setStyle("-fx-font-size: 30; -fx-font-weight: bold;-fx-text-alignment: center;");
+        data2Name.setTextFill(darkBlueColor);
+        data2Name.setFont(new Font("Poppins Extrabold", 30));
+        ImageView data2Img = new ImageView();
+        addImageIntoColorRoundBorder(data2Img
+                ,new Image("C:\\Users\\linhpham\\IdeaProjects\\demo\\src\\main\\resources\\nt\\testingtool\\" +
+                        "istqb\\imageAsset\\AnhNguyenTaTuyet.png"), Color.BLUEVIOLET);
+        scaleDownImgWithPercentage(data2Img,14);
+        data2Img.setRotationAxis(new Point3D(0,0,1));
+        data2Img.setRotate(-10);
+        creditData2.getChildren().add(data2Img);
+        creditData2.getChildren().add(data2Name);
+
+        HBox creditData3 = new HBox();
+        creditData3.setAlignment(Pos.CENTER);
+        creditData3.setPrefWidth(screenWidth);
+//        creditData1.setPrefHeight(screenHeight / 8);
+        Label data3Name = new Label("TRAM NGUYEN PHUONG NGUYET\n" +
+                "Tram.NguyenPhuongNguyet@nashtechglobal.com");
+        data3Name.setStyle("-fx-font-size: 30; -fx-font-weight: bold;-fx-text-alignment: center;");
+        data3Name.setTextFill(darkBlueColor);
+        data3Name.setFont(new Font("Poppins Extrabold", 30));
+        ImageView data3Img = new ImageView();
+        addImageIntoColorRoundBorder(data3Img
+                ,new Image("C:\\Users\\linhpham\\IdeaProjects\\demo\\src\\main\\resources\\nt\\testingtool\\" +
+                        "istqb\\imageAsset\\TramNguyenPhuongNguyet.png"), Color.BLUEVIOLET);
+        scaleDownImgWithPercentage(data3Img,13);
+        data3Img.setRotationAxis(new Point3D(0,0,1));
+        data3Img.setRotate(-10);
+        creditData3.getChildren().add(data3Name);
+        creditData3.getChildren().add(data3Img);
+
+        HBox technicalSupportCredit = new HBox();
+        technicalSupportCredit.setAlignment(Pos.CENTER);
+        technicalSupportCredit.setPrefWidth(screenWidth);
+        technicalSupportCredit.setPrefHeight(screenHeight / 8);
+        Label techSupportName = new Label("Technical Support:\nBANG VAN CONG\n" +
+                "Bang.VanCong@nashtechglobal.com");
+        techSupportName.setStyle("-fx-font-size: 30; -fx-font-weight: bold;-fx-text-alignment: center;");
+        techSupportName.setTextFill(darkBlueColor);
+        techSupportName.setFont(new Font("Poppins Extrabold", 30));
+        ImageView techSupportImg = new ImageView();
+        addImageIntoColorRoundBorder(techSupportImg
+                ,new Image("C:\\Users\\linhpham\\IdeaProjects\\demo\\src\\main\\resources\\nt\\testingtool\\" +
+                        "istqb\\imageAsset\\BangVanCong.png"), Color.BLUE);
+        scaleDownImgWithPercentage(techSupportImg,15);
+        techSupportImg.setRotationAxis(new Point3D(0,0,1));
+        techSupportImg.setRotate(10);
+        technicalSupportCredit.getChildren().add(techSupportImg);
+        technicalSupportCredit.getChildren().add(techSupportName);
 
         VBox creditPageVbox = new VBox();
         creditPageVbox.setAlignment(Pos.CENTER_RIGHT);
         creditPageVbox.getChildren().add(creditHeader);
         creditPageVbox.getChildren().add(creditCreator);
-        creditPageVbox.getChildren().add(creditDataCollector);
+        creditPageVbox.getChildren().add(creditData1);
+        creditPageVbox.getChildren().add(creditData2);
+        creditPageVbox.getChildren().add(creditData3);
+        creditPageVbox.getChildren().add(technicalSupportCredit);
         return creditPageVbox;
     }
 

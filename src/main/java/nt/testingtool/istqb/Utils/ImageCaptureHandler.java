@@ -2,8 +2,13 @@ package nt.testingtool.istqb.Utils;
 
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.SnapshotParameters;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.ImageWriteException;
 import org.apache.commons.imaging.Imaging;
@@ -97,5 +102,29 @@ public class ImageCaptureHandler {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public static void addImageIntoColorRoundBorder(ImageView imageViewToWrap, Image imageToWrap, Color color) {
+        // set a clip to apply rounded border to the original image.
+        Rectangle clip = new Rectangle(
+                imageViewToWrap.getFitWidth(), imageViewToWrap.getFitHeight()
+        );
+        clip.setArcWidth(20);
+        clip.setArcHeight(20);
+        imageViewToWrap.setClip(clip);
+
+        // snapshot the rounded image.
+        SnapshotParameters parameters = new SnapshotParameters();
+        parameters.setFill(Color.TRANSPARENT);
+        WritableImage image = imageViewToWrap.snapshot(parameters, null);
+
+        // remove the rounding clip so that our effect can show through.
+        imageViewToWrap.setClip(null);
+
+        // apply a shadow effect.
+        imageViewToWrap.setEffect(new DropShadow(20, color));
+
+        // store the rounded image in the imageView.
+        imageViewToWrap.setImage(imageToWrap);
     }
 }
