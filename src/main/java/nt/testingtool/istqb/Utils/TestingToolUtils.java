@@ -256,6 +256,16 @@ public class TestingToolUtils {
         return imageToCheck;
     }
 
+    public static void scaleDownImgWithPercentage(ImageView imageToScale, int percentage){
+        double imgHeight = imageToScale.getImage().getHeight();
+        double imgWidth = imageToScale.getImage().getWidth();
+        double percentValue = (double) percentage /100;
+        imgHeight = imgHeight*percentValue;
+        imgWidth = imgWidth*percentValue;
+        imageToScale.setFitHeight(imgHeight);
+        imageToScale.setFitWidth(imgWidth);
+    }
+
     private static void renderQuestionGridTable(GridPane gridPane, String[] tableRowData) {
         String[] rowDataStringList;
         for (int rowIndex = 0; rowIndex < tableRowData.length; rowIndex++) {
