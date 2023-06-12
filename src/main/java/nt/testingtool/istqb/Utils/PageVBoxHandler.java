@@ -42,12 +42,12 @@ import static nt.testingtool.istqb.Utils.TestingToolUtils.*;
 import static org.apache.commons.io.FileUtils.cleanDirectory;
 
 public class PageVBoxHandler {
-    static Stage mainStage;
-    static Pagination pagination;
     public static ComboBox selectTestingTypeComboBox;
     public static TextField testNameTextField;
     public static Button btn_StartTest;
     public static String testUserName = "";
+    static Stage mainStage;
+    static Pagination pagination;
 
     public static void changeStageAndScene(ActionEvent event, VBox layoutVBoxContainer, String sceneTitle) {
         mainStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
@@ -55,6 +55,7 @@ public class PageVBoxHandler {
         Scene scene = new Scene(layout, screenWidth, screenHeight);
         mainStage.setResizable(false);
         mainStage.setTitle(sceneTitle);
+        mainStage.getIcons().add(applicationIconLocation);
         mainStage.setScene(scene);
     }
 
@@ -65,6 +66,7 @@ public class PageVBoxHandler {
         newStage.setResizable(false);
         newStage.setTitle(sceneTitle);
         newStage.setScene(scene);
+        newStage.getIcons().add(applicationIconLocation);
         newStage.show();
     }
 
@@ -72,7 +74,7 @@ public class PageVBoxHandler {
         utilQuestionHandler = initQuestionHandler();
         isTestingEnd = false;
         File projectContentFile = new File(getCurrentPath() + File.separator + "ProjectContentEncrypted.txt");
-        String[] readValue = readAndDeryptPasswordAndFileNameDataFromText(projectContentFile);
+        String[] readValue = readAndDecryptPasswordAndFileNameDataFromText(projectContentFile);
         setQuestionFileName(readValue[1]);
         setZipFilePassword(readValue[0]);
         //Read zip data file
@@ -89,27 +91,17 @@ public class PageVBoxHandler {
         HBox logoBox = new HBox();
         HBox infoBox = new HBox();
         Button informationButton = new Button("Credit");
-        //Build
-//        ImageView infoImage = new ImageView(new Image("nt/testingtool/istqb/imageAsset/infomationIcon.png"));
-//        nashTechLogo.setImage(new Image("nt/istqbtt/nt_istqbtt/NashTechLogo.png"));
-        //Debug
-        ImageView infoImage = new ImageView(new Image("C:\\Users\\linhpham\\IdeaProjects\\demo\\src\\main\\resources\\nt\\testingtool\\istqb\\imageAsset\\infomationIcon.png"));
-        nashTechLogo.setImage(new Image("C:\\Users\\linhpham\\IdeaProjects\\demo\\src\\main\\resources\\nt\\testingtool\\istqb\\imageAsset\\NashTechLogo.png"));
+        Image imgInfoIcon = new Image(PageVBoxHandler.class.getResource(
+                "/nt/testingtool/istqb/imageAsset/infomationIcon.png").toString());
+        ImageView infoImage = new ImageView(imgInfoIcon);
+        Image imgNTLogo = new Image(PageVBoxHandler.class.getResource(
+                "/nt/testingtool/istqb/imageAsset/NashTechLogo.png").toString());
+        nashTechLogo.setImage(imgNTLogo);
         infoImage.setFitHeight(headerHeight / 2);
         infoImage.setFitWidth(headerHeight / 2);
         informationButton.setGraphic(infoImage);
         informationButton.setOnAction(event -> {
             changeStageAndScene(event, setupCreditPage(), "Credit Page");
-
-//            try {
-//                //Debug
-////                testUserName = testNameTextField.getText();
-//                //End debug
-//                openNewStageAndScene(setupCertificatePage(), "Certificate Page");
-//            } catch (Exception e) {
-//                throw new RuntimeException(e);
-//            }
-
         });
         logoBox.setPrefSize(screenWidth / 2, headerHeight);
         infoBox.setPrefSize(screenWidth / 2, headerHeight);
@@ -260,10 +252,8 @@ public class PageVBoxHandler {
     }
 
     private static VBox setupCertificatePage() throws Exception {
-        //Build code
-//        Image certificateBackGround = new Image("nt/testingtool/istqb/imageAsset/NTInternalCertificate.png");
-        //Debug code
-        Image certificateBackGround = new Image("C:\\Users\\linhpham\\IdeaProjects\\demo\\src\\main\\resources\\nt\\testingtool\\istqb\\imageAsset\\NTInternalCertificate.png");
+        Image certificateBackGround = new Image(PageVBoxHandler.class.getResource(
+                "/nt/testingtool/istqb/imageAsset/NTInternalCertificate.png").toString());
         Label testUserNameCertificate = new Label(testUserName);
         testUserNameCertificate.setStyle("-fx-font-size: 48; -fx-font-weight: bold;-fx-text-alignment: center;");
         testUserNameCertificate.setTextFill(darkBlueColor);
@@ -378,72 +368,69 @@ public class PageVBoxHandler {
         creatorName.setStyle("-fx-font-size: 34; -fx-font-weight: bold;-fx-text-alignment: center;");
         creatorName.setTextFill(darkBlueColor);
         creatorName.setFont(new Font("Poppins Extrabold", 34));
-        ImageView creatorImg = new ImageView();
-        addImageIntoColorRoundBorder(creatorImg
-                ,new Image("C:\\Users\\linhpham\\IdeaProjects\\demo\\src\\main\\resources\\nt\\testingtool\\" +
-                        "istqb\\imageAsset\\LinhPham.jpeg"), Color.BLUE);
-        scaleDownImgWithPercentage(creatorImg,20);
-        creatorImg.setRotationAxis(new Point3D(0,0,1));
-        creatorImg.setRotate(10);
-        creditCreator.getChildren().add(creatorImg);
+        ImageView creatorImgView = new ImageView();
+        Image imgCreator = new Image(PageVBoxHandler.class.getResource(
+                "/nt/testingtool/istqb/imageAsset/LinhPham.jpeg").toString());
+        addImageIntoColorRoundBorder(creatorImgView, imgCreator, Color.BLUE);
+        scaleDownImgWithPercentage(creatorImgView, 20);
+        creatorImgView.setRotationAxis(new Point3D(0, 0, 1));
+        creatorImgView.setRotate(10);
+        creditCreator.getChildren().add(creatorImgView);
         creditCreator.getChildren().add(creatorName);
 
         HBox creditData1 = new HBox();
         creditData1.setAlignment(Pos.CENTER);
         creditData1.setPrefWidth(screenWidth);
-//        creditData1.setPrefHeight(screenHeight / 8);
         Label data1Name = new Label("Data Collectors:\nANH TRAN THI HUYNH\n" +
                 "Anh.TranThiHuynh@nashtechglobal.com");
         data1Name.setStyle("-fx-font-size: 30; -fx-font-weight: bold;-fx-text-alignment: center;");
         data1Name.setTextFill(darkBlueColor);
         data1Name.setFont(new Font("Poppins Extrabold", 30));
-        ImageView data1Img = new ImageView();
-        addImageIntoColorRoundBorder(data1Img
-                ,new Image("C:\\Users\\linhpham\\IdeaProjects\\demo\\src\\main\\resources\\nt\\testingtool\\" +
-                        "istqb\\imageAsset\\AnhTranThiHuynh.png"), Color.BLUEVIOLET);
-        scaleDownImgWithPercentage(data1Img,6);
-        data1Img.setRotationAxis(new Point3D(0,0,1));
-        data1Img.setRotate(-10);
+        ImageView data1ImgView = new ImageView();
+        Image imgData1 = new Image(PageVBoxHandler.class.getResource(
+                "/nt/testingtool/istqb/imageAsset/AnhTranThiHuynh.png").toString());
+        addImageIntoColorRoundBorder(data1ImgView, imgData1, Color.BLUEVIOLET);
+        scaleDownImgWithPercentage(data1ImgView, 6);
+        data1ImgView.setRotationAxis(new Point3D(0, 0, 1));
+        data1ImgView.setRotate(-10);
         creditData1.getChildren().add(data1Name);
-        creditData1.getChildren().add(data1Img);
+        creditData1.getChildren().add(data1ImgView);
 
         HBox creditData2 = new HBox();
         creditData2.setAlignment(Pos.CENTER);
         creditData2.setPrefWidth(screenWidth);
-//        creditData1.setPrefHeight(screenHeight / 8);
         Label data2Name = new Label("ANH NGUYEN TA TUYET\n" +
                 "Anh.NguyenTaTuyet@nashtechglobal.com");
         data2Name.setStyle("-fx-font-size: 30; -fx-font-weight: bold;-fx-text-alignment: center;");
         data2Name.setTextFill(darkBlueColor);
         data2Name.setFont(new Font("Poppins Extrabold", 30));
-        ImageView data2Img = new ImageView();
-        addImageIntoColorRoundBorder(data2Img
-                ,new Image("C:\\Users\\linhpham\\IdeaProjects\\demo\\src\\main\\resources\\nt\\testingtool\\" +
-                        "istqb\\imageAsset\\AnhNguyenTaTuyet.png"), Color.BLUEVIOLET);
-        scaleDownImgWithPercentage(data2Img,14);
-        data2Img.setRotationAxis(new Point3D(0,0,1));
-        data2Img.setRotate(-10);
-        creditData2.getChildren().add(data2Img);
+        ImageView data2ImgView = new ImageView();
+        Image imgData2 = new Image(PageVBoxHandler.class.getResource(
+                "/nt/testingtool/istqb/imageAsset/AnhNguyenTaTuyet.png").toString());
+        addImageIntoColorRoundBorder(data2ImgView, imgData2, Color.BLUEVIOLET);
+        scaleDownImgWithPercentage(data2ImgView, 14);
+        data2ImgView.setRotationAxis(new Point3D(0, 0, 1));
+        data2ImgView.setRotate(10);
+        creditData2.getChildren().add(data2ImgView);
         creditData2.getChildren().add(data2Name);
 
         HBox creditData3 = new HBox();
         creditData3.setAlignment(Pos.CENTER);
         creditData3.setPrefWidth(screenWidth);
-//        creditData1.setPrefHeight(screenHeight / 8);
         Label data3Name = new Label("TRAM NGUYEN PHUONG NGUYET\n" +
                 "Tram.NguyenPhuongNguyet@nashtechglobal.com");
         data3Name.setStyle("-fx-font-size: 30; -fx-font-weight: bold;-fx-text-alignment: center;");
         data3Name.setTextFill(darkBlueColor);
         data3Name.setFont(new Font("Poppins Extrabold", 30));
-        ImageView data3Img = new ImageView();
-        addImageIntoColorRoundBorder(data3Img
-                ,new Image("C:\\Users\\linhpham\\IdeaProjects\\demo\\src\\main\\resources\\nt\\testingtool\\" +
-                        "istqb\\imageAsset\\TramNguyenPhuongNguyet.png"), Color.BLUEVIOLET);
-        scaleDownImgWithPercentage(data3Img,13);
-        data3Img.setRotationAxis(new Point3D(0,0,1));
-        data3Img.setRotate(-10);
+        ImageView data3ImgView = new ImageView();
+        Image imgData3 = new Image(PageVBoxHandler.class.getResource(
+                "/nt/testingtool/istqb/imageAsset/TramNguyenPhuongNguyet.png").toString());
+        addImageIntoColorRoundBorder(data3ImgView, imgData3, Color.BLUEVIOLET);
+        scaleDownImgWithPercentage(data3ImgView, 13);
+        data3ImgView.setRotationAxis(new Point3D(0, 0, 1));
+        data3ImgView.setRotate(-10);
         creditData3.getChildren().add(data3Name);
-        creditData3.getChildren().add(data3Img);
+        creditData3.getChildren().add(data3ImgView);
 
         HBox technicalSupportCredit = new HBox();
         technicalSupportCredit.setAlignment(Pos.CENTER);
@@ -454,14 +441,14 @@ public class PageVBoxHandler {
         techSupportName.setStyle("-fx-font-size: 30; -fx-font-weight: bold;-fx-text-alignment: center;");
         techSupportName.setTextFill(darkBlueColor);
         techSupportName.setFont(new Font("Poppins Extrabold", 30));
-        ImageView techSupportImg = new ImageView();
-        addImageIntoColorRoundBorder(techSupportImg
-                ,new Image("C:\\Users\\linhpham\\IdeaProjects\\demo\\src\\main\\resources\\nt\\testingtool\\" +
-                        "istqb\\imageAsset\\BangVanCong.png"), Color.BLUE);
-        scaleDownImgWithPercentage(techSupportImg,15);
-        techSupportImg.setRotationAxis(new Point3D(0,0,1));
-        techSupportImg.setRotate(10);
-        technicalSupportCredit.getChildren().add(techSupportImg);
+        ImageView techSupportImgView = new ImageView();
+        Image imgSupporter = new Image(PageVBoxHandler.class.getResource(
+                "/nt/testingtool/istqb/imageAsset/BangVanCong.png").toString());
+        addImageIntoColorRoundBorder(techSupportImgView, imgSupporter, Color.BLUE);
+        scaleDownImgWithPercentage(techSupportImgView, 15);
+        techSupportImgView.setRotationAxis(new Point3D(0, 0, 1));
+        techSupportImgView.setRotate(10);
+        technicalSupportCredit.getChildren().add(techSupportImgView);
         technicalSupportCredit.getChildren().add(techSupportName);
 
         VBox creditPageVbox = new VBox();
@@ -545,8 +532,9 @@ public class PageVBoxHandler {
         Label resultTitle = new Label("Your result is:");
         resultTitle.setStyle("-fx-font-size: 48;");
         int correctAnswer = calculateTestingResult();
-//        String passFailString = determinePassOrFail(correctAnswer);
-        String passFailString = "Passed";
+        String passFailString = determinePassOrFail(correctAnswer);
+        //Debug
+//        String passFailString = "Passed";
         Label resultPassFail = new Label(passFailString);
         if (passFailString.equals("Passed")) {
             resultPassFail.setStyle("-fx-text-fill: #5E8C5D; -fx-font-size: 72; -fx-font-weight: bold;");

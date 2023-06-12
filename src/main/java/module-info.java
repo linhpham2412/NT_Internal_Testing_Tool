@@ -16,10 +16,10 @@ module nt.testingtool.istqb {
     requires org.apache.commons.imaging;
     requires org.apache.commons.io;
 
-    opens nt.testingtool.istqb to javafx.fxml;
+    opens nt.testingtool.istqb to javafx.fxml, javafx.graphics;
     exports nt.testingtool.istqb;
     exports nt.testingtool.istqb.Utils;
-    opens nt.testingtool.istqb.Utils to javafx.fxml;
+    opens nt.testingtool.istqb.Utils to javafx.fxml, javafx.graphics;
     exports nt.testingtool.istqb.pageController;
-    opens nt.testingtool.istqb.pageController to javafx.fxml;
+    opens nt.testingtool.istqb.pageController to javafx.fxml, javafx.graphics;
 }

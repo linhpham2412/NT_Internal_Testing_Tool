@@ -3,6 +3,7 @@ package nt.testingtool.istqb;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -17,6 +18,7 @@ public class NT_Testing_Tool_Application extends Application {
         Scene scene = new Scene(fxmlLoader.load(), screenWidth, screenHeight);
         stage.setTitle("Home Page");
         stage.setScene(scene);
+        stage.getIcons().add(applicationIconLocation);
         stage.show();
     }
 

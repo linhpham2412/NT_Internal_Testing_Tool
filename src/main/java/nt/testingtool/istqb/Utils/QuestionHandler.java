@@ -44,9 +44,6 @@ public class QuestionHandler {
     static HBox[] answerHBoxContainers;
     //Question data item
     static String[] questionStringTitle;
-    private final int checkingBankIndex = 0;
-    private final int previousTestingBankIndex = 0;
-    private final int testingBankIndex = 0;
     public File imagesFolder;
     public boolean isFirstLoad = true;
     List<String> listOfISTQBTypeReadFromData = new ArrayList<>();
@@ -57,16 +54,12 @@ public class QuestionHandler {
     private String readData;
     private String zipPassword = "";
 
-    public static QuestionHandler initQuestionHandler(){
+    public static QuestionHandler initQuestionHandler() {
         return new QuestionHandler();
     }
 
     public static boolean isQuestionMultipleChoices() {
         return isQuestionMultipleChoices;
-    }
-
-    public void setQuestionMultipleChoices(boolean questionMultipleChoices) {
-        isQuestionMultipleChoices = questionMultipleChoices;
     }
 
     public static void initQuestionElements(int pageIndex) {
@@ -88,106 +81,16 @@ public class QuestionHandler {
         return selectedAnswer;
     }
 
-    public static void setSelectedAnswer(int pageIndex, int elementIndex, int value){
+    public static void setSelectedAnswer(int pageIndex, int elementIndex, int value) {
         selectedAnswer[pageIndex][elementIndex] = value;
     }
-    public static void setSelectedAnswerElementArray(int pageIndex, int[] elementArray){
+
+    public static void setSelectedAnswerElementArray(int pageIndex, int[] elementArray) {
         selectedAnswer[pageIndex] = elementArray;
-    }
-    public static void setCorrectAnswerAnswer(int pageIndex, int elementIndex, int value){
-        correctAnswer[pageIndex][elementIndex] = value;
     }
 
     public static int[][] getCorrectAnswer() {
         return correctAnswer;
-    }
-
-    public String[] getQuestionStringTitle() {
-        return questionStringTitle;
-    }
-
-    public void setQuestionStringTitle(String[] questionStringTitle) {
-        QuestionHandler.questionStringTitle = questionStringTitle;
-    }
-
-    public String[] getQuestionStringAnswer() {
-        return questionStringAnswer;
-    }
-
-    public void setQuestionStringAnswer(String[] questionStringAnswer) {
-        QuestionHandler.questionStringAnswer = questionStringAnswer;
-    }
-
-    public boolean[] getQuestionBooleanIsAnswerCorrect() {
-        return questionBooleanIsAnswerCorrect;
-    }
-
-    public void setQuestionBooleanIsAnswerCorrect(boolean[] questionBooleanIsAnswerCorrect) {
-        QuestionHandler.questionBooleanIsAnswerCorrect = questionBooleanIsAnswerCorrect;
-    }
-
-    public Label[] getQuestionTitle() {
-        return questionTitle;
-    }
-
-    public void setQuestionTitle(Label[] title) {
-        questionTitle = title;
-    }
-
-    public ImageView[] getQuestionImage() {
-        return questionImage;
-    }
-
-    public void setQuestionImage(ImageView[] questionImage) {
-        QuestionHandler.questionImage = questionImage;
-    }
-
-    public GridPane[] getQuestionGridTable() {
-        return questionGridTable;
-    }
-
-    public void setQuestionGridTable(GridPane[] questionGridTable) {
-        QuestionHandler.questionGridTable = questionGridTable;
-    }
-
-    public Object[] getQuestionObjects() {
-        return questionObjects;
-    }
-
-    public void setQuestionObjects(Object[] questionObjects) {
-        QuestionHandler.questionObjects = questionObjects;
-    }
-
-    public CheckBox[] getAnswerCheckBoxes() {
-        return answerCheckBoxes;
-    }
-
-    public void setAnswerCheckBoxes(CheckBox[] answerCheckBoxes) {
-        QuestionHandler.answerCheckBoxes = answerCheckBoxes;
-    }
-
-    public RadioButton[] getAnswerRadioButtons() {
-        return answerRadioButtons;
-    }
-
-    public void setAnswerRadioButtons(RadioButton[] answerRadioButtons) {
-        QuestionHandler.answerRadioButtons = answerRadioButtons;
-    }
-
-    public ToggleGroup[] getAnswerRadioGroup() {
-        return answerRadioGroup;
-    }
-
-    public void setAnswerRadioGroup(ToggleGroup[] answerRadioGroup) {
-        QuestionHandler.answerRadioGroup = answerRadioGroup;
-    }
-
-    public HBox[] getAnswerHBoxContainers() {
-        return answerHBoxContainers;
-    }
-
-    public void setAnswerHBoxContainers(HBox[] answerHBoxContainers) {
-        QuestionHandler.answerHBoxContainers = answerHBoxContainers;
     }
 
     public static void initSelectedAnwser() {
@@ -198,6 +101,15 @@ public class QuestionHandler {
         correctAnswer = new int[getNumberOfQuestionsPerQuestionBank()][getMaxNumberOfAnswerElementsInQuestionBank()];
     }
 
+    public static String checkUnAnsweredQuestions() {
+        StringBuilder remainingUnAnswers = new StringBuilder();
+        for (int i = 0; i < getNumberOfQuestionsPerQuestionBank(); i++) {
+            if (Arrays.stream(selectedAnswer[i]).sum() == 0) {
+                remainingUnAnswers.append(i + 1).append(", ");
+            }
+        }
+        return remainingUnAnswers.deleteCharAt(remainingUnAnswers.length() - 2).toString().trim();
+    }
 
     public void readQuestionZipFile(String fileName, String zipPassword) throws ZipException, IOException {
         if (isFirstLoad) {
@@ -254,7 +166,6 @@ public class QuestionHandler {
 
     private File switchDataZipFileName(String zipFileName) throws IOException, ZipException {
         File zipFileToDelete;
-//        executionPath = System.getProperty("user.dir");
         Path sourceFile = Paths.get(getCurrentPath() + "//QuestionData//" + zipFileName + ".zip");
         Path cloneFile = Paths.get(getCurrentPath() + zipFileName + "_Process.zip");
         Files.copy(sourceFile, cloneFile, StandardCopyOption.REPLACE_EXISTING);
@@ -287,7 +198,6 @@ public class QuestionHandler {
                     }
                 }
                 while ((readData = reader.readLine()) != null);
-//                numberOfQuestionBanksInGroup=0;
                 questionDataModels = Arrays.copyOf(questionDataModels, questionDataModels.length - 1);
                 questionBankDataModels = new QuestionBankDataModel();
                 questionBankDataModels.setQuestionDataModels(questionDataModels);
@@ -486,15 +396,5 @@ public class QuestionHandler {
 
     private int convertBooleanToOneOrZero(boolean booleanToConvert) {
         return (booleanToConvert) ? 1 : 0;
-    }
-
-    public static String checkUnAnsweredQuestions(){
-        StringBuilder remainingUnAnswers = new StringBuilder();
-        for (int i =0;i<getNumberOfQuestionsPerQuestionBank();i++){
-            if(Arrays.stream(selectedAnswer[i]).sum()==0){
-                remainingUnAnswers.append(i+1).append(", ");
-            }
-        }
-        return remainingUnAnswers.deleteCharAt(remainingUnAnswers.length()-2).toString().trim();
     }
 }

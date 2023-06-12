@@ -37,7 +37,7 @@ public class ImageCaptureHandler {
             int width = input.getWidth();
             int height = input.getHeight();
             BufferedImage output = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-            int px[] = new int[width * height];
+            int[] px = new int[width * height];
             input.getRGB(0, 0, width, height, px, 0, width);
             output.setRGB(0, 0, width, height, px, 0, width);
             ImageIO.write(output, "jpg", new File(getCurrentPath() + File.separator + imageName + ".jpg"));
