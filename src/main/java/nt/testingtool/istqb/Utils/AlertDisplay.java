@@ -18,10 +18,5 @@ public class AlertDisplay {
         alert.setHeaderText(alertHeader);
         alert.setContentText(alertMessage);
         alert.show();
-//        alert.showAndWait().ifPresent(rs -> {
-//            if (rs == ButtonType.OK) {
-//                changeStageAndScene(actionEvent, setupSummaryPage(toolFont), "Summary Page");
-//            }
-//        });
     }
 }

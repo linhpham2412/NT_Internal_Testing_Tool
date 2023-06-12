@@ -31,14 +31,13 @@ import static nt.testingtool.istqb.Utils.QuestionHandler.*;
 public class TestingToolUtils {
 
     static QuestionHandler utilQuestionHandler;
+    static int currentPageIndex = 0;
+    static boolean isTestingEnd = false;
+    static File loadedImageFile = null;
 
     public static int getCurrentPageIndex() {
         return currentPageIndex;
     }
-
-    static int currentPageIndex = 0;
-    static boolean isTestingEnd = false;
-    static File loadedImageFile = null;
 
     public static int calculateTestingResult() {
         int calculatedCorrectAnswers = 0;
@@ -75,13 +74,13 @@ public class TestingToolUtils {
     public static ScrollPane getQuestionPages(int pageIndex) {
         //setup and clean up data
         currentPageIndex = pageIndex;
-        utilQuestionHandler.initQuestionElements(pageIndex);
+        initQuestionElements(pageIndex);
         //map question data to local variables
         mapValueFromTestingQuestionToLocalVariablesByPageIndex(pageIndex);
         //Add more question components inside vbox
         Label questionNumber = new Label("Question " + (pageIndex + 1) + ":");
         assignQuestionDataFromClassToTitleLabelOrImage();
-        String kindOfChoice = (utilQuestionHandler.isQuestionMultipleChoices()) ? "[Multi Choice]" : "[Single choice]";
+        String kindOfChoice = (isQuestionMultipleChoices()) ? "[Multi Choice]" : "[Single choice]";
         Label answerLabel = new Label("Answer: " + kindOfChoice);
         assignAnswersDataFromClassToCheckBoxOrRadioButton(pageIndex);
         if (isTestingEnd) disableAllAnswersInHBoxContainer();
@@ -114,7 +113,6 @@ public class TestingToolUtils {
         Button previousPageButton = new Button("Previous");
         Button endTestButton = new Button("End Test");
         Button summaryPageButton = new Button("Summary Page");
-//        summaryPageButton.setVisible(isTestingEnd);
         HBox navigationContainer = new HBox();
         navigationContainer.getChildren().add(summaryPageButton);
         navigationContainer.getChildren().add(previousPageButton);
@@ -163,63 +161,63 @@ public class TestingToolUtils {
 
 
     private static void mapValueFromTestingQuestionToLocalVariablesByPageIndex(int questionIndex) {
-        QuestionDataModel testingQuestion = utilQuestionHandler.testingQuestions[questionIndex];
-        utilQuestionHandler.questionStringTitle[0] = testingQuestion.getQuestionTitle1();
-        utilQuestionHandler.questionStringTitle[1] = testingQuestion.getQuestionTitle2();
-        utilQuestionHandler.questionStringTitle[2] = testingQuestion.getQuestionTitle3();
-        utilQuestionHandler.questionStringTitle[3] = testingQuestion.getQuestionTitle4();
-        utilQuestionHandler.questionStringTitle[4] = testingQuestion.getQuestionTitle5();
-        utilQuestionHandler.questionStringTitle[5] = testingQuestion.getQuestionTitle6();
-        utilQuestionHandler.questionStringTitle[6] = testingQuestion.getQuestionTitle7();
-        utilQuestionHandler.questionStringTitle[7] = testingQuestion.getQuestionTitle8();
-        utilQuestionHandler.questionStringTitle[8] = testingQuestion.getQuestionTitle9();
-        utilQuestionHandler.questionStringTitle[9] = testingQuestion.getQuestionTitle10();
-        utilQuestionHandler.isQuestionMultipleChoices = testingQuestion.isMultipleChoice;
-        utilQuestionHandler.questionStringAnswer[0] = testingQuestion.getQuestionAnswer1();
-        utilQuestionHandler.questionStringAnswer[1] = testingQuestion.getQuestionAnswer2();
-        utilQuestionHandler.questionStringAnswer[2] = testingQuestion.getQuestionAnswer3();
-        utilQuestionHandler.questionStringAnswer[3] = testingQuestion.getQuestionAnswer4();
-        utilQuestionHandler.questionStringAnswer[4] = testingQuestion.getQuestionAnswer5();
-        utilQuestionHandler.questionStringAnswer[5] = testingQuestion.getQuestionAnswer6();
-        utilQuestionHandler.questionStringAnswer[6] = testingQuestion.getQuestionAnswer7();
-        utilQuestionHandler.questionStringAnswer[7] = testingQuestion.getQuestionAnswer8();
-        utilQuestionHandler.questionStringAnswer[8] = testingQuestion.getQuestionAnswer9();
-        utilQuestionHandler.questionStringAnswer[9] = testingQuestion.getQuestionAnswer10();
-        utilQuestionHandler.questionBooleanIsAnswerCorrect[0] = testingQuestion.isQuestionAnswer1Correct;
-        utilQuestionHandler.questionBooleanIsAnswerCorrect[1] = testingQuestion.isQuestionAnswer2Correct;
-        utilQuestionHandler.questionBooleanIsAnswerCorrect[2] = testingQuestion.isQuestionAnswer3Correct;
-        utilQuestionHandler.questionBooleanIsAnswerCorrect[3] = testingQuestion.isQuestionAnswer4Correct;
-        utilQuestionHandler.questionBooleanIsAnswerCorrect[4] = testingQuestion.isQuestionAnswer5Correct;
-        utilQuestionHandler.questionBooleanIsAnswerCorrect[5] = testingQuestion.isQuestionAnswer6Correct;
-        utilQuestionHandler.questionBooleanIsAnswerCorrect[6] = testingQuestion.isQuestionAnswer7Correct;
-        utilQuestionHandler.questionBooleanIsAnswerCorrect[7] = testingQuestion.isQuestionAnswer8Correct;
-        utilQuestionHandler.questionBooleanIsAnswerCorrect[8] = testingQuestion.isQuestionAnswer9Correct;
-        utilQuestionHandler.questionBooleanIsAnswerCorrect[9] = testingQuestion.isQuestionAnswer10Correct;
+        QuestionDataModel testingQuestion = testingQuestions[questionIndex];
+        questionStringTitle[0] = testingQuestion.getQuestionTitle1();
+        questionStringTitle[1] = testingQuestion.getQuestionTitle2();
+        questionStringTitle[2] = testingQuestion.getQuestionTitle3();
+        questionStringTitle[3] = testingQuestion.getQuestionTitle4();
+        questionStringTitle[4] = testingQuestion.getQuestionTitle5();
+        questionStringTitle[5] = testingQuestion.getQuestionTitle6();
+        questionStringTitle[6] = testingQuestion.getQuestionTitle7();
+        questionStringTitle[7] = testingQuestion.getQuestionTitle8();
+        questionStringTitle[8] = testingQuestion.getQuestionTitle9();
+        questionStringTitle[9] = testingQuestion.getQuestionTitle10();
+        isQuestionMultipleChoices = testingQuestion.isMultipleChoice;
+        questionStringAnswer[0] = testingQuestion.getQuestionAnswer1();
+        questionStringAnswer[1] = testingQuestion.getQuestionAnswer2();
+        questionStringAnswer[2] = testingQuestion.getQuestionAnswer3();
+        questionStringAnswer[3] = testingQuestion.getQuestionAnswer4();
+        questionStringAnswer[4] = testingQuestion.getQuestionAnswer5();
+        questionStringAnswer[5] = testingQuestion.getQuestionAnswer6();
+        questionStringAnswer[6] = testingQuestion.getQuestionAnswer7();
+        questionStringAnswer[7] = testingQuestion.getQuestionAnswer8();
+        questionStringAnswer[8] = testingQuestion.getQuestionAnswer9();
+        questionStringAnswer[9] = testingQuestion.getQuestionAnswer10();
+        questionBooleanIsAnswerCorrect[0] = testingQuestion.isQuestionAnswer1Correct;
+        questionBooleanIsAnswerCorrect[1] = testingQuestion.isQuestionAnswer2Correct;
+        questionBooleanIsAnswerCorrect[2] = testingQuestion.isQuestionAnswer3Correct;
+        questionBooleanIsAnswerCorrect[3] = testingQuestion.isQuestionAnswer4Correct;
+        questionBooleanIsAnswerCorrect[4] = testingQuestion.isQuestionAnswer5Correct;
+        questionBooleanIsAnswerCorrect[5] = testingQuestion.isQuestionAnswer6Correct;
+        questionBooleanIsAnswerCorrect[6] = testingQuestion.isQuestionAnswer7Correct;
+        questionBooleanIsAnswerCorrect[7] = testingQuestion.isQuestionAnswer8Correct;
+        questionBooleanIsAnswerCorrect[8] = testingQuestion.isQuestionAnswer9Correct;
+        questionBooleanIsAnswerCorrect[9] = testingQuestion.isQuestionAnswer10Correct;
     }
 
     private static void assignQuestionDataFromClassToTitleLabelOrImage() {
         for (int i = 0; i < 10; i++) {
-            if (Objects.equals(utilQuestionHandler.questionStringTitle[i], "")) {
+            if (Objects.equals(questionStringTitle[i], "")) {
                 break;
-            } else if (utilQuestionHandler.questionStringTitle[i].contains("Images\\")) {
-                utilQuestionHandler.questionStringTitle[i] = utilQuestionHandler.questionStringTitle[i]
-                        .replace("Images\\", "file:///" + utilQuestionHandler.imageFolderAbsolutePath);
-                utilQuestionHandler.questionImage[i] = new ImageView();
-                utilQuestionHandler.questionImage[i].setImage(new Image(utilQuestionHandler.questionStringTitle[i]));
+            } else if (questionStringTitle[i].contains("Images\\")) {
+                questionStringTitle[i] = questionStringTitle[i]
+                        .replace("Images\\", "file:///" + imageFolderAbsolutePath);
+                questionImage[i] = new ImageView();
+                questionImage[i].setImage(new Image(questionStringTitle[i]));
                 checkImageSizeAndResizeIfLongerThanScreenSize(getObjectWidthInScrollPane(), screenHeight / 2
-                        , utilQuestionHandler.questionImage[i]);
-                utilQuestionHandler.questionObjects[i] = utilQuestionHandler.questionImage[i];
-            } else if (utilQuestionHandler.questionStringTitle[i].contains("[TableHeader]")) {
-                String[] tableRowData = utilQuestionHandler.questionStringTitle[i].split("(\\[TableRow\\])");
-                utilQuestionHandler.questionGridTable[i] = new GridPane();
-                utilQuestionHandler.questionGridTable[i].setGridLinesVisible(true);
-                renderQuestionGridTable(utilQuestionHandler.questionGridTable[i], tableRowData);
-                utilQuestionHandler.questionObjects[i] = utilQuestionHandler.questionGridTable[i];
+                        , questionImage[i]);
+                questionObjects[i] = questionImage[i];
+            } else if (questionStringTitle[i].contains("[TableHeader]")) {
+                String[] tableRowData = questionStringTitle[i].split("(\\[TableRow\\])");
+                questionGridTable[i] = new GridPane();
+                questionGridTable[i].setGridLinesVisible(true);
+                renderQuestionGridTable(questionGridTable[i], tableRowData);
+                questionObjects[i] = questionGridTable[i];
             } else {
-                utilQuestionHandler.questionTitle[i] = new Label(utilQuestionHandler.questionStringTitle[i]);
-                utilQuestionHandler.questionTitle[i].setPrefWidth(getObjectWidthInScrollPane());
-                utilQuestionHandler.questionTitle[i].setWrapText(true);
-                utilQuestionHandler.questionObjects[i] = utilQuestionHandler.questionTitle[i];
+                questionTitle[i] = new Label(questionStringTitle[i]);
+                questionTitle[i].setPrefWidth(getObjectWidthInScrollPane());
+                questionTitle[i].setWrapText(true);
+                questionObjects[i] = questionTitle[i];
             }
         }
     }
@@ -256,12 +254,12 @@ public class TestingToolUtils {
         return imageToCheck;
     }
 
-    public static void scaleDownImgWithPercentage(ImageView imageToScale, int percentage){
+    public static void scaleDownImgWithPercentage(ImageView imageToScale, int percentage) {
         double imgHeight = imageToScale.getImage().getHeight();
         double imgWidth = imageToScale.getImage().getWidth();
-        double percentValue = (double) percentage /100;
-        imgHeight = imgHeight*percentValue;
-        imgWidth = imgWidth*percentValue;
+        double percentValue = (double) percentage / 100;
+        imgHeight = imgHeight * percentValue;
+        imgWidth = imgWidth * percentValue;
         imageToScale.setFitHeight(imgHeight);
         imageToScale.setFitWidth(imgWidth);
     }
@@ -286,11 +284,11 @@ public class TestingToolUtils {
 
     private static VBox addTitleObjectsToVBoxContainer(VBox questionContainer) {
         for (int i = 0; i < 10; i++) {
-            if (utilQuestionHandler.questionObjects[i] == null) {
+            if (questionObjects[i] == null) {
                 break;
             } else {
-                questionContainer.getChildren().add((Node) utilQuestionHandler.questionObjects[i]);
-                VBox.setMargin((Node) utilQuestionHandler.questionObjects[i], new Insets(2, 2, 2, 5));
+                questionContainer.getChildren().add((Node) questionObjects[i]);
+                VBox.setMargin((Node) questionObjects[i], new Insets(2, 2, 2, 5));
             }
         }
         return questionContainer;
@@ -299,22 +297,22 @@ public class TestingToolUtils {
     public static void assignAnswersDataFromClassToCheckBoxOrRadioButton(int pageIndex) {
         int answerIndex = 0;
         for (int i = 0; i < 5; i++) {
-            if (Objects.equals(utilQuestionHandler.questionStringAnswer[answerIndex], "")) {
+            if (Objects.equals(questionStringAnswer[answerIndex], "")) {
                 break;
-            } else if (utilQuestionHandler.isQuestionMultipleChoices) {
-                utilQuestionHandler.answerHBoxContainers[i] = new HBox();
-                createAnswerCheckBoxElementWithIndexAndAddToHBoxContainer(pageIndex, answerIndex, utilQuestionHandler.answerHBoxContainers[i]);
+            } else if (isQuestionMultipleChoices) {
+                answerHBoxContainers[i] = new HBox();
+                createAnswerCheckBoxElementWithIndexAndAddToHBoxContainer(pageIndex, answerIndex, answerHBoxContainers[i]);
                 answerIndex += 1;
-                createAnswerCheckBoxElementWithIndexAndAddToHBoxContainer(pageIndex, answerIndex, utilQuestionHandler.answerHBoxContainers[i]);
-                utilQuestionHandler.answerHBoxContainers[i].setAlignment(Pos.CENTER);
+                createAnswerCheckBoxElementWithIndexAndAddToHBoxContainer(pageIndex, answerIndex, answerHBoxContainers[i]);
+                answerHBoxContainers[i].setAlignment(Pos.CENTER);
                 answerIndex += 1;
                 coloringBackGroundForHBoxBasedOnIndexOddAndEven(i);
             } else {
-                utilQuestionHandler.answerHBoxContainers[i] = new HBox();
-                createAnswerRadioButtonElementWithIndexAndAddToHBoxContainer(pageIndex, answerIndex, utilQuestionHandler.answerHBoxContainers[i]);
+                answerHBoxContainers[i] = new HBox();
+                createAnswerRadioButtonElementWithIndexAndAddToHBoxContainer(pageIndex, answerIndex, answerHBoxContainers[i]);
                 answerIndex += 1;
-                createAnswerRadioButtonElementWithIndexAndAddToHBoxContainer(pageIndex, answerIndex, utilQuestionHandler.answerHBoxContainers[i]);
-                utilQuestionHandler.answerHBoxContainers[i].setAlignment(Pos.CENTER);
+                createAnswerRadioButtonElementWithIndexAndAddToHBoxContainer(pageIndex, answerIndex, answerHBoxContainers[i]);
+                answerHBoxContainers[i].setAlignment(Pos.CENTER);
                 answerIndex += 1;
                 coloringBackGroundForHBoxBasedOnIndexOddAndEven(i);
             }
@@ -323,71 +321,71 @@ public class TestingToolUtils {
 
     private static void coloringBackGroundForHBoxBasedOnIndexOddAndEven(int hboxIndex) {
         if (hboxIndex % 2 == 0) {
-            utilQuestionHandler.answerHBoxContainers[hboxIndex].setBackground(
+            answerHBoxContainers[hboxIndex].setBackground(
                     new Background(new BackgroundFill(Paint.valueOf("#CACACA"), CornerRadii.EMPTY, Insets.EMPTY)));
         } else {
-            utilQuestionHandler.answerHBoxContainers[hboxIndex].setBackground(
+            answerHBoxContainers[hboxIndex].setBackground(
                     new Background(new BackgroundFill(Paint.valueOf("#BFBFBF"), CornerRadii.EMPTY, Insets.EMPTY)));
         }
     }
 
     private static HBox createAnswerCheckBoxElementWithIndexAndAddToHBoxContainer(int pageIndex, int elementIndex, HBox container) {
-        utilQuestionHandler.answerCheckBoxes[elementIndex] = new CheckBox(utilQuestionHandler.questionStringAnswer[elementIndex]);
-        utilQuestionHandler.answerCheckBoxes[elementIndex].setPrefWidth(getCheckBoxWidthInScrollPane());
-        utilQuestionHandler.answerCheckBoxes[elementIndex].setWrapText(true);
-        if (Objects.equals(utilQuestionHandler.questionStringAnswer[elementIndex], "")) {
-            utilQuestionHandler.answerCheckBoxes[elementIndex].setVisible(false);
+        answerCheckBoxes[elementIndex] = new CheckBox(questionStringAnswer[elementIndex]);
+        answerCheckBoxes[elementIndex].setPrefWidth(getCheckBoxWidthInScrollPane());
+        answerCheckBoxes[elementIndex].setWrapText(true);
+        if (Objects.equals(questionStringAnswer[elementIndex], "")) {
+            answerCheckBoxes[elementIndex].setVisible(false);
         }
-        if (utilQuestionHandler.answerCheckBoxes[elementIndex].isVisible()) {
+        if (answerCheckBoxes[elementIndex].isVisible()) {
             if (getSelectedAnswer()[pageIndex][elementIndex] == 1) {
-                utilQuestionHandler.answerCheckBoxes[elementIndex].setSelected(true);
+                answerCheckBoxes[elementIndex].setSelected(true);
             }
-            utilQuestionHandler.answerCheckBoxes[elementIndex].setOnAction(event -> {
-                if (utilQuestionHandler.answerCheckBoxes[elementIndex].isSelected()) {
+            answerCheckBoxes[elementIndex].setOnAction(event -> {
+                if (answerCheckBoxes[elementIndex].isSelected()) {
                     setSelectedAnswer(pageIndex, elementIndex, 1);
                 } else {
                     setSelectedAnswer(pageIndex, elementIndex, 0);
                 }
             });
         }
-        container.getChildren().add(utilQuestionHandler.answerCheckBoxes[elementIndex]);
-        HBox.setMargin(utilQuestionHandler.answerCheckBoxes[elementIndex], new Insets(10, 10, 10, 10));
+        container.getChildren().add(answerCheckBoxes[elementIndex]);
+        HBox.setMargin(answerCheckBoxes[elementIndex], new Insets(10, 10, 10, 10));
         return container;
     }
 
     private static HBox createAnswerRadioButtonElementWithIndexAndAddToHBoxContainer(int pageIndex, int elementIndex, HBox container) {
-        utilQuestionHandler.answerRadioButtons[elementIndex] = new RadioButton(utilQuestionHandler.questionStringAnswer[elementIndex]);
-        utilQuestionHandler.answerRadioButtons[elementIndex].setPrefWidth(getCheckBoxWidthInScrollPane());
-        utilQuestionHandler.answerRadioButtons[elementIndex].setWrapText(true);
-        utilQuestionHandler.answerRadioGroup[pageIndex].getToggles().add(utilQuestionHandler.answerRadioButtons[elementIndex]);
-        if (Objects.equals(utilQuestionHandler.questionStringAnswer[elementIndex], "")) {
-            utilQuestionHandler.answerRadioButtons[elementIndex].setVisible(false);
+        answerRadioButtons[elementIndex] = new RadioButton(questionStringAnswer[elementIndex]);
+        answerRadioButtons[elementIndex].setPrefWidth(getCheckBoxWidthInScrollPane());
+        answerRadioButtons[elementIndex].setWrapText(true);
+        answerRadioGroup[pageIndex].getToggles().add(answerRadioButtons[elementIndex]);
+        if (Objects.equals(questionStringAnswer[elementIndex], "")) {
+            answerRadioButtons[elementIndex].setVisible(false);
         }
-        if (utilQuestionHandler.answerRadioButtons[elementIndex].isVisible()) {
+        if (answerRadioButtons[elementIndex].isVisible()) {
             if (getSelectedAnswer()[pageIndex][elementIndex] == 1) {
-                utilQuestionHandler.answerRadioButtons[elementIndex].setSelected(true);
+                answerRadioButtons[elementIndex].setSelected(true);
             }
-            utilQuestionHandler.answerRadioButtons[elementIndex].setOnAction(event -> {
+            answerRadioButtons[elementIndex].setOnAction(event -> {
                 setSelectedAnswerElementArray(pageIndex,
-                        Arrays.stream(utilQuestionHandler.selectedAnswer[pageIndex]).map(e -> e = 0).toArray());
-                if (utilQuestionHandler.answerRadioButtons[elementIndex].isSelected()) {
+                        Arrays.stream(selectedAnswer[pageIndex]).map(e -> e = 0).toArray());
+                if (answerRadioButtons[elementIndex].isSelected()) {
                     setSelectedAnswer(pageIndex, elementIndex, 1);
                 }
             });
         }
-        container.getChildren().add(utilQuestionHandler.answerRadioButtons[elementIndex]);
-        HBox.setMargin(utilQuestionHandler.answerRadioButtons[elementIndex], new Insets(10, 10, 10, 10));
+        container.getChildren().add(answerRadioButtons[elementIndex]);
+        HBox.setMargin(answerRadioButtons[elementIndex], new Insets(10, 10, 10, 10));
         return container;
     }
 
     private static VBox addAnswerHBoxObjectsToVBoxContainer(VBox questionContainer) {
         for (int i = 0; i < 5; i++) {
-            if (utilQuestionHandler.answerHBoxContainers[i] == null) {
+            if (answerHBoxContainers[i] == null) {
                 break;
             } else {
-                utilQuestionHandler.answerHBoxContainers[i].setMaxWidth(getObjectWidthInScrollPane());
-                utilQuestionHandler.answerHBoxContainers[i].setPrefWidth(getObjectWidthInScrollPane());
-                questionContainer.getChildren().add(utilQuestionHandler.answerHBoxContainers[i]);
+                answerHBoxContainers[i].setMaxWidth(getObjectWidthInScrollPane());
+                answerHBoxContainers[i].setPrefWidth(getObjectWidthInScrollPane());
+                questionContainer.getChildren().add(answerHBoxContainers[i]);
             }
         }
         return questionContainer;
@@ -424,7 +422,7 @@ public class TestingToolUtils {
         writer.close();
     }
 
-    public static String[] readAndDeryptPasswordAndFileNameDataFromText(File fileToRead) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
+    public static String[] readAndDecryptPasswordAndFileNameDataFromText(File fileToRead) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
         String valueToRead = "";
         try {
             Scanner scanner = new Scanner(fileToRead);
@@ -438,8 +436,8 @@ public class TestingToolUtils {
         valueToRead = EncryptDecryptBased64.decryptedBase64TextWithSecretKey(valueToRead, getEncryptDecryptKey());
         String[] splitedValue = valueToRead.split("(?:\\|)");
         String[] readValue = new String[2];
-        readValue[0] = splitedValue[1].substring(splitedValue[1].indexOf(":") + 1, splitedValue[1].length()).trim();
-        readValue[1] = splitedValue[2].substring(splitedValue[2].indexOf(":") + 1, splitedValue[2].length()).trim();
+        readValue[0] = splitedValue[1].substring(splitedValue[1].indexOf(":") + 1).trim();
+        readValue[1] = splitedValue[2].substring(splitedValue[2].indexOf(":") + 1).trim();
         return readValue;
     }
 }

@@ -2,6 +2,7 @@ package nt.testingtool.istqb.Utils;
 
 import javafx.animation.Timeline;
 import javafx.geometry.Insets;
+import javafx.scene.image.Image;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
@@ -10,8 +11,14 @@ import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Objects;
 
 public class ProjectConfiguration {
     public static Font toolFont = new Font(24);
@@ -21,7 +28,6 @@ public class ProjectConfiguration {
     private static String zipFilePassword = "123";
     private static final String encryptDecryptSalt = "13260779";
     private static final String encryptDecryptKey = "q>CO((oQKm9Pl^aR7UV.a3wx$6kX-D";
-    private static String testUserName;
     //set up testing time
     private static int testingMinutes = 60;
     //Question section
@@ -38,7 +44,6 @@ public class ProjectConfiguration {
 
     private static int passingScore = 26;
     private static String questionGroupName = "";
-//    private final String currentPath = null;
     public static FileChooser fileChooser = new FileChooser();
 
     public static double getObjectWidthInScrollPane() {
@@ -63,10 +68,12 @@ public class ProjectConfiguration {
 
     private static Timeline timerTimeLine;
     private static int maxNumberOfAnswerElementsInQuestionBank = 10;
-
+    public static final Image applicationIconLocation = new Image(ProjectConfiguration.class.getResource(
+            "/nt/testingtool/istqb/imageAsset/TestingToolLogo.png").toString());
     public static Background grayBackGround = new Background(new BackgroundFill(Paint.valueOf("#CACACA"), CornerRadii.EMPTY, Insets.EMPTY));
     public static Color redNTColor = Color.valueOf("#FA6070");
     public static Color darkBlueColor = Color.valueOf("#284977");
+
 
     public static String getCurrentPath() throws IOException {
         return new java.io.File(".").getCanonicalPath();
@@ -118,10 +125,6 @@ public class ProjectConfiguration {
 
     public static int getMaxNumberOfAnswerElementsInQuestionBank() {
         return maxNumberOfAnswerElementsInQuestionBank;
-    }
-
-    public static void setMaxNumberOfAnswerElementsInQuestionBank(int numberOfAnswerElementsInQuestionBank) {
-        maxNumberOfAnswerElementsInQuestionBank = numberOfAnswerElementsInQuestionBank;
     }
 
     public static int getTestingMinutes() {
