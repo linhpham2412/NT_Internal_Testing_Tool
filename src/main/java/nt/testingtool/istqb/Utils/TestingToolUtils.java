@@ -340,6 +340,12 @@ public class TestingToolUtils {
             if (getSelectedAnswer()[pageIndex][elementIndex] == 1) {
                 answerCheckBoxes[elementIndex].setSelected(true);
             }
+            //update green background if it is correct answer in review
+            if (isReviewAnswers){
+                if (getCorrectAnswer()[pageIndex][elementIndex] == 1){
+                    answerCheckBoxes[elementIndex].setStyle(cssGreenColorBGValue);
+                }
+            }
             answerCheckBoxes[elementIndex].setOnAction(event -> {
                 if (answerCheckBoxes[elementIndex].isSelected()) {
                     setSelectedAnswer(pageIndex, elementIndex, 1);
@@ -364,6 +370,12 @@ public class TestingToolUtils {
         if (answerRadioButtons[elementIndex].isVisible()) {
             if (getSelectedAnswer()[pageIndex][elementIndex] == 1) {
                 answerRadioButtons[elementIndex].setSelected(true);
+            }
+            //update green background if it is correct answer in review
+            if (isReviewAnswers){
+                if (getCorrectAnswer()[pageIndex][elementIndex] == 1){
+                    answerRadioButtons[elementIndex].setStyle(cssGreenColorBGValue);
+                }
             }
             answerRadioButtons[elementIndex].setOnAction(event -> {
                 setSelectedAnswerElementArray(pageIndex,
