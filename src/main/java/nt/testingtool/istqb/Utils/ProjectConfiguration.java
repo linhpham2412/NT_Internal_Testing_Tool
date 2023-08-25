@@ -73,6 +73,8 @@ public class ProjectConfiguration {
     public static Background grayBackGround = new Background(new BackgroundFill(Paint.valueOf("#CACACA"), CornerRadii.EMPTY, Insets.EMPTY));
     public static Color redNTColor = Color.valueOf("#FA6070");
     public static Color darkBlueColor = Color.valueOf("#284977");
+    public static String cssGreenColorBGValue = "-fx-background-color: #21EDD2;";
+    public static boolean isReviewAnswers = false;
 
 
     public static String getCurrentPath() throws IOException {

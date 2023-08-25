@@ -205,6 +205,7 @@ public class PageVBoxHandler {
                         //Debug
 //                        setTestingMinutes(1);
                         //End debug
+                        isReviewAnswers = false;
                         changeStageAndScene(event, setupLayoutPageExam(), "Examination Page of: "
                                 + getQuestionGroupName());
                     } catch (IOException | ZipException e) {
@@ -463,12 +464,14 @@ public class PageVBoxHandler {
     }
 
     public static VBox setupLayoutPageExam() throws IOException, ZipException {
-        //Read and assign all questions data to questionHandler
-        utilQuestionHandler.readQuestionZipFile(getQuestionFileName(), getZipFilePassword());
-        utilQuestionHandler.mapDataInQuestionFileToDataModelByGroupName();
-        initCorrectAnswer();
-        initSelectedAnwser();
-        utilQuestionHandler.randomChooseQuestionsInBankThenShuffleAndSaveToTestingQuestions();
+        if(!isReviewAnswers) {
+            //Read and assign all questions data to questionHandler
+            utilQuestionHandler.readQuestionZipFile(getQuestionFileName(), getZipFilePassword());
+            utilQuestionHandler.mapDataInQuestionFileToDataModelByGroupName();
+            initCorrectAnswer();
+            initSelectedAnwser();
+            utilQuestionHandler.randomChooseQuestionsInBankThenShuffleAndSaveToTestingQuestions();
+        }
 
         //Set up Timer header
         Label timerValue = new Label();
@@ -479,21 +482,27 @@ public class PageVBoxHandler {
         timerProgressBar.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
         final int[] seconds = {getTestingMinutes() * 60};
         int totalSeconds = seconds[0];
-        setTimerTimeLine(new Timeline(new KeyFrame(Duration.seconds(1), ev -> {
-            timerValue.setText("Time left " + calculateTimeLeft(seconds));
-            seconds[0]--;
-            timerProgressBar.setProgress(1 - (double) seconds[0] / totalSeconds);
-            if (seconds[0] < 0) {
-                getTimerTimeLine().stop();
-                isTestingEnd = true;
-                disableAllAnswersInHBoxContainer();
-                assignAnswersDataFromClassToCheckBoxOrRadioButton(getCurrentPageIndex());
-                pagination.setCurrentPageIndex(getNumberOfQuestionsPerQuestionBank());
-                AlertDisplay.displayTimingAlert("Time's up!", "All questions are unable to change!");
-            }
-        })));
+        if (!isReviewAnswers){
+            setTimerTimeLine(new Timeline(new KeyFrame(Duration.seconds(1), ev -> {
+                timerValue.setText("Time left " + calculateTimeLeft(seconds));
+                seconds[0]--;
+                timerProgressBar.setProgress(1 - (double) seconds[0] / totalSeconds);
+                if (seconds[0] < 0) {
+                    getTimerTimeLine().stop();
+                    isTestingEnd = true;
+                    disableAllAnswersInHBoxContainer();
+                    assignAnswersDataFromClassToCheckBoxOrRadioButton(getCurrentPageIndex());
+                    pagination.setCurrentPageIndex(getNumberOfQuestionsPerQuestionBank());
+                    AlertDisplay.displayTimingAlert("Time's up!", "All questions are unable to change!");
+                }
+            })));
         getTimerTimeLine().setCycleCount(Animation.INDEFINITE);
         getTimerTimeLine().play();
+        }else{
+            timerValue.setText("Reviewing Results");
+            timerProgressBar.setProgress(1);
+            isTestingEnd = true;
+        }
         //End of timer
         HBox timerArea = new HBox();
         HBox.setMargin(timerValue, new Insets(5, 5, 5, 5));
@@ -565,6 +574,7 @@ public class PageVBoxHandler {
             initSelectedAnwser();
             try {
                 isTestingEnd = false;
+                isReviewAnswers = false;
                 changeStageAndScene(event, setupLayoutPageExam()
                         , "Examination Page of: " + selectTestingTypeComboBox.getValue());
             } catch (IOException | ZipException e) {
@@ -572,6 +582,19 @@ public class PageVBoxHandler {
             }
         });
         startNewTestButton.setFont(toolFont);
+        Button reviewAnswerButton = new Button("Review Answers");
+        reviewAnswerButton.setOnAction(event -> {
+            try {
+                isTestingEnd = false;
+                isReviewAnswers = true;
+                changeStageAndScene(event, setupLayoutPageExam()
+                        , "Answers Review Page of: " + selectTestingTypeComboBox.getValue());
+            } catch (IOException | ZipException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        reviewAnswerButton.setStyle(cssGreenColorBGValue);
+        reviewAnswerButton.setFont(toolFont);
         Button quitAppButton = new Button("Quit");
         quitAppButton.setFont(toolFont);
         quitAppButton.setOnAction(event -> {
@@ -588,6 +611,7 @@ public class PageVBoxHandler {
         summaryCommandContainer.setAlignment(Pos.CENTER);
         summaryCommandContainer.getChildren().add(returnToHomeButton);
         summaryCommandContainer.getChildren().add(startNewTestButton);
+        summaryCommandContainer.getChildren().add(reviewAnswerButton);
         summaryCommandContainer.getChildren().add(quitAppButton);
         HBox.setMargin(returnToHomeButton, new Insets(10, 10, 10, 10));
         HBox.setMargin(startNewTestButton, new Insets(10, 10, 10, 10));
