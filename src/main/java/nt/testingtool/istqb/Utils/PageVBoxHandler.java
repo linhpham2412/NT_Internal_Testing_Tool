@@ -13,6 +13,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -48,6 +49,9 @@ public class PageVBoxHandler {
     public static String testUserName = "";
     static Stage mainStage;
     static Pagination pagination;
+    static int questionIndex = 0;
+    static int maxQuestionIndex = 0;
+    static boolean isQuestionDesign = false;
 
     public static void changeStageAndScene(ActionEvent event, VBox layoutVBoxContainer, String sceneTitle) {
         mainStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
@@ -499,7 +503,7 @@ public class PageVBoxHandler {
         getTimerTimeLine().setCycleCount(Animation.INDEFINITE);
         getTimerTimeLine().play();
         }else{
-            timerValue.setText("Reviewing Results");
+            timerValue.setText("Time left 00:00");
             timerProgressBar.setProgress(1);
             isTestingEnd = true;
         }
@@ -762,6 +766,57 @@ public class PageVBoxHandler {
         resultVBox.setPrefWidth(screenWidth);
         resultVBox.setAlignment(Pos.CENTER);
         resultVBox.getChildren().add(layoutHBox);
+
+        return resultVBox;
+    }
+
+    public static VBox setupQuestionDesignerPage() {
+        utilQuestionHandler = initQuestionHandler();
+        QuestionDesigner questionDesigner = new QuestionDesigner();
+        VBox resultVBox = questionDesigner.generateElements();
+        questionDesigner.openFileButton.setOnAction(event -> {
+            try {
+                fileChooser.setInitialDirectory(new File(getCurrentPath()));
+            } catch (IOException ignored) {
+            }
+            File questionBank = fileChooser.showOpenDialog(null);
+            questionIndex =1;
+            questionDesigner.getQuestionBankFileName().setText(questionBank.getName());
+            utilQuestionHandler.readAndMapQuestionDataFromFileToDataObject(questionBank);
+            maxQuestionIndex = utilQuestionHandler.getquestionDataModels().length;
+            questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler,questionIndex);
+        });
+
+        questionDesigner.questionIndexTextField.setOnKeyReleased(event -> {
+            if (event.getCode() == KeyCode.ENTER){
+                questionIndex = Integer.parseInt(questionDesigner.questionIndexTextField.getText());
+                questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler,questionIndex);
+            }
+        });
+
+        questionDesigner.nextQuestion.setOnAction((event -> {
+            if(questionIndex<maxQuestionIndex-1){
+                questionIndex++;
+                questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler,questionIndex);
+            }
+        }));
+
+        questionDesigner.prevQuestion.setOnAction((event -> {
+            if(questionIndex>=1){
+                questionIndex--;
+                questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler,questionIndex);
+            }
+        }));
+
+        questionDesigner.previewQuestion.setOnAction(event -> {
+            try {
+                isReviewAnswers = true;
+                isQuestionDesign = true;
+                openNewStageAndScene(setupLayoutPageExam(), "Exam Page Preview");
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
 
         return resultVBox;
     }

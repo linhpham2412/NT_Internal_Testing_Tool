@@ -75,8 +75,12 @@ public class TestingToolUtils {
         //setup and clean up data
         currentPageIndex = pageIndex;
         initQuestionElements(pageIndex);
+//        if (!isQuestionDesign) {
         //map question data to local variables
         mapValueFromTestingQuestionToLocalVariablesByPageIndex(pageIndex);
+//        }else{
+//            mapValueFromTestingQuestionToLocalVariablesByDesignFields();
+//        }
         //Add more question components inside vbox
         Label questionNumber = new Label("Question " + (pageIndex + 1) + ":");
         assignQuestionDataFromClassToTitleLabelOrImage();
@@ -161,7 +165,12 @@ public class TestingToolUtils {
 
 
     private static void mapValueFromTestingQuestionToLocalVariablesByPageIndex(int questionIndex) {
-        QuestionDataModel testingQuestion = testingQuestions[questionIndex];
+        QuestionDataModel testingQuestion = new QuestionDataModel();
+        if (isQuestionDesign) {
+            testingQuestion = utilQuestionHandler.getquestionDataModels()[PageVBoxHandler.questionIndex];
+        } else {
+            testingQuestion = testingQuestions[questionIndex];
+        }
         questionStringTitle[0] = testingQuestion.getQuestionTitle1();
         questionStringTitle[1] = testingQuestion.getQuestionTitle2();
         questionStringTitle[2] = testingQuestion.getQuestionTitle3();
@@ -193,6 +202,10 @@ public class TestingToolUtils {
         questionBooleanIsAnswerCorrect[7] = testingQuestion.isQuestionAnswer8Correct;
         questionBooleanIsAnswerCorrect[8] = testingQuestion.isQuestionAnswer9Correct;
         questionBooleanIsAnswerCorrect[9] = testingQuestion.isQuestionAnswer10Correct;
+    }
+
+    private static void mapValueFromTestingQuestionToLocalVariablesByDesignFields() {
+
     }
 
     private static void assignQuestionDataFromClassToTitleLabelOrImage() {
@@ -337,13 +350,21 @@ public class TestingToolUtils {
             answerCheckBoxes[elementIndex].setVisible(false);
         }
         if (answerCheckBoxes[elementIndex].isVisible()) {
-            if (getSelectedAnswer()[pageIndex][elementIndex] == 1) {
-                answerCheckBoxes[elementIndex].setSelected(true);
+            if (!isQuestionDesign) {
+                if (getSelectedAnswer()[pageIndex][elementIndex] == 1) {
+                    answerCheckBoxes[elementIndex].setSelected(true);
+                }
             }
             //update green background if it is correct answer in review
-            if (isReviewAnswers){
-                if (getCorrectAnswer()[pageIndex][elementIndex] == 1){
-                    answerCheckBoxes[elementIndex].setStyle(cssGreenColorBGValue);
+            if (isReviewAnswers) {
+                if (isQuestionDesign) {
+                    if (questionBooleanIsAnswerCorrect[elementIndex]) {
+                        answerCheckBoxes[elementIndex].setStyle(cssGreenColorBGValue);
+                    }
+                } else {
+                    if (getCorrectAnswer()[pageIndex][elementIndex] == 1) {
+                        answerCheckBoxes[elementIndex].setStyle(cssGreenColorBGValue);
+                    }
                 }
             }
             answerCheckBoxes[elementIndex].setOnAction(event -> {
@@ -368,13 +389,21 @@ public class TestingToolUtils {
             answerRadioButtons[elementIndex].setVisible(false);
         }
         if (answerRadioButtons[elementIndex].isVisible()) {
-            if (getSelectedAnswer()[pageIndex][elementIndex] == 1) {
-                answerRadioButtons[elementIndex].setSelected(true);
+            if (!isQuestionDesign) {
+                if (getSelectedAnswer()[pageIndex][elementIndex] == 1) {
+                    answerRadioButtons[elementIndex].setSelected(true);
+                }
             }
             //update green background if it is correct answer in review
-            if (isReviewAnswers){
-                if (getCorrectAnswer()[pageIndex][elementIndex] == 1){
-                    answerRadioButtons[elementIndex].setStyle(cssGreenColorBGValue);
+            if (isReviewAnswers) {
+                if (isQuestionDesign) {
+                    if (questionBooleanIsAnswerCorrect[elementIndex]) {
+                        answerRadioButtons[elementIndex].setStyle(cssGreenColorBGValue);
+                    }
+                } else {
+                    if (getCorrectAnswer()[pageIndex][elementIndex] == 1) {
+                        answerRadioButtons[elementIndex].setStyle(cssGreenColorBGValue);
+                    }
                 }
             }
             answerRadioButtons[elementIndex].setOnAction(event -> {

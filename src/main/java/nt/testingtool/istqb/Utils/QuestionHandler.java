@@ -47,6 +47,7 @@ public class QuestionHandler {
     public File imagesFolder;
     public boolean isFirstLoad = true;
     List<String> listOfISTQBTypeReadFromData = new ArrayList<>();
+    List<String> fullListOfISTQBTypeReadFromData = new ArrayList<>();
     private ZipFile zipFile;
     private QuestionBankDataModel questionBankDataModels;
     private QuestionDataModel[] questionDataModels;
@@ -99,6 +100,10 @@ public class QuestionHandler {
 
     public static void initCorrectAnswer() {
         correctAnswer = new int[getNumberOfQuestionsPerQuestionBank()][getMaxNumberOfAnswerElementsInQuestionBank()];
+    }
+
+    public QuestionDataModel[] getquestionDataModels(){
+        return questionDataModels;
     }
 
     public static String checkUnAnsweredQuestions() {
@@ -161,6 +166,44 @@ public class QuestionHandler {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+        }
+    }
+
+    public List<String> getFullListOfISTQBTypeReadFromData() {
+        return fullListOfISTQBTypeReadFromData;
+    }
+
+    public void readAndMapQuestionDataFromFileToDataObject(File readFile){
+        File dataTextFileName = readFile;
+        questionDataModels = new QuestionDataModel[1];
+        int numberOfQuestionBanksInGroup = 0;
+        try (FileReader fr = new FileReader(dataTextFileName);
+             BufferedReader reader = new BufferedReader(fr)) {
+            readData = reader.readLine();
+            do {
+                try {
+                    String[] readList = Arrays.stream(readData.split("\\|"))
+                            .map(e -> e.trim()).collect(Collectors.toList()).toArray(new String[0]);
+//                    if (!readList[1].equals("Group")) {
+                        listOfISTQBTypeReadFromData.add(readList[1]);
+                        questionDataModels[numberOfQuestionBanksInGroup] = readAndAddQuestionsToQuestionBank(readList);
+                        numberOfQuestionBanksInGroup++;
+                        questionDataModels = Arrays.copyOf(questionDataModels, numberOfQuestionBanksInGroup + 1);
+//                    }
+                } catch (Exception e) {
+                }
+            }
+            while ((readData = reader.readLine()) != null);
+            fullListOfISTQBTypeReadFromData = listOfISTQBTypeReadFromData;
+            listOfISTQBTypeReadFromData = listOfISTQBTypeReadFromData.stream().distinct().collect(Collectors.toList());
+            questionDataModels = Arrays.copyOf(questionDataModels, questionDataModels.length - 1);
+            questionBankDataModels = new QuestionBankDataModel();
+            questionBankDataModels.setQuestionDataModels(questionDataModels);
+            //close reader after read
+            reader.close();
+            fr.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
