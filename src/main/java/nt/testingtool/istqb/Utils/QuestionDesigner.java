@@ -26,11 +26,11 @@ public class QuestionDesigner {
 
     Button openFileButton = new Button("Open File");
 
-    public Button getPreviewQuestion() {
-        return previewQuestion;
-    }
-
-    Button previewQuestion = new Button("Preview");
+//    public Button getPreviewQuestion() {
+//        return previewQuestion;
+//    }
+//
+//    Button previewQuestion = new Button("Preview");
 
     public Button getPrevQuestion() {
         return prevQuestion;
@@ -117,9 +117,9 @@ public class QuestionDesigner {
         qdLeftHeader.getChildren().add(openFileButton);
         qdLeftHeader.getChildren().add(questionBankFileName);
 //        Button previewQuestion = new Button("Preview");
-        previewQuestion.setFont(toolFont);
-        previewQuestion.setStyle(cssGreenColorBGValue);
-        qdRightHeader.getChildren().add(previewQuestion);
+//        previewQuestion.setFont(toolFont);
+//        previewQuestion.setStyle(cssGreenColorBGValue);
+//        qdRightHeader.getChildren().add(previewQuestion);
         //Command pane
         HBox commandPane = new HBox();
         commandPane.setPrefHeight(screenHeight / 16);

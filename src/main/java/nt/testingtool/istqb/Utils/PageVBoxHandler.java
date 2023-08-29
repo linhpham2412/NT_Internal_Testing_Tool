@@ -52,6 +52,9 @@ public class PageVBoxHandler {
     static int questionIndex = 0;
     static int maxQuestionIndex = 0;
     static boolean isQuestionDesign = false;
+    static Stage newStage = new Stage();
+    static Button previewQuestionButton = new Button();
+
 
     public static void changeStageAndScene(ActionEvent event, VBox layoutVBoxContainer, String sceneTitle) {
         mainStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
@@ -64,7 +67,7 @@ public class PageVBoxHandler {
     }
 
     public static void openNewStageAndScene(VBox layoutVBoxContainer, String sceneTitle) {
-        Stage newStage = new Stage();
+//        Stage newStage = new Stage();
         Pane layout = new Pane(layoutVBoxContainer);
         Scene scene = new Scene(layout, screenWidth, screenHeight);
         newStage.setResizable(false);
@@ -468,7 +471,7 @@ public class PageVBoxHandler {
     }
 
     public static VBox setupLayoutPageExam() throws IOException, ZipException {
-        if(!isReviewAnswers) {
+        if (!isReviewAnswers) {
             //Read and assign all questions data to questionHandler
             utilQuestionHandler.readQuestionZipFile(getQuestionFileName(), getZipFilePassword());
             utilQuestionHandler.mapDataInQuestionFileToDataModelByGroupName();
@@ -479,6 +482,8 @@ public class PageVBoxHandler {
 
         //Set up Timer header
         Label timerValue = new Label();
+        Button previewQuestion = new Button("_____Preview___");
+        previewQuestion.setFont(toolFont);
         timerValue.setFont(toolFont);
         ProgressBar timerProgressBar = new ProgressBar();
         timerProgressBar.setPrefWidth(screenWidth * 0.87);
@@ -486,7 +491,7 @@ public class PageVBoxHandler {
         timerProgressBar.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
         final int[] seconds = {getTestingMinutes() * 60};
         int totalSeconds = seconds[0];
-        if (!isReviewAnswers){
+        if (!isReviewAnswers) {
             setTimerTimeLine(new Timeline(new KeyFrame(Duration.seconds(1), ev -> {
                 timerValue.setText("Time left " + calculateTimeLeft(seconds));
                 seconds[0]--;
@@ -500,10 +505,11 @@ public class PageVBoxHandler {
                     AlertDisplay.displayTimingAlert("Time's up!", "All questions are unable to change!");
                 }
             })));
-        getTimerTimeLine().setCycleCount(Animation.INDEFINITE);
-        getTimerTimeLine().play();
-        }else{
-            timerValue.setText("Time left 00:00");
+            getTimerTimeLine().setCycleCount(Animation.INDEFINITE);
+            getTimerTimeLine().play();
+        } else {
+//            timerValue.setText("Time left 00:00");
+            previewQuestion.setVisible(true);
             timerProgressBar.setProgress(1);
             isTestingEnd = true;
         }
@@ -511,8 +517,22 @@ public class PageVBoxHandler {
         HBox timerArea = new HBox();
         HBox.setMargin(timerValue, new Insets(5, 5, 5, 5));
         HBox.setMargin(timerProgressBar, new Insets(15, 15, 15, 15));
+        if (isQuestionDesign){
+            timerArea.getChildren().add(previewQuestion);
+        }
         timerArea.getChildren().add(timerValue);
         timerArea.getChildren().add(timerProgressBar);
+
+        previewQuestion.setOnAction(event -> {
+            try {
+                isReviewAnswers = true;
+                isQuestionDesign = true;
+                changeStageAndScene(event, setupLayoutPageExam(), "Exam Page Preview");
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        previewQuestionButton = previewQuestion;
 
         //Set up Pagination question pages
         pagination = new Pagination(getNumberOfQuestionsPerQuestionBank());
@@ -780,35 +800,11 @@ public class PageVBoxHandler {
             } catch (IOException ignored) {
             }
             File questionBank = fileChooser.showOpenDialog(null);
-            questionIndex =1;
+            questionIndex = 1;
             questionDesigner.getQuestionBankFileName().setText(questionBank.getName());
             utilQuestionHandler.readAndMapQuestionDataFromFileToDataObject(questionBank);
             maxQuestionIndex = utilQuestionHandler.getquestionDataModels().length;
-            questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler,questionIndex);
-        });
-
-        questionDesigner.questionIndexTextField.setOnKeyReleased(event -> {
-            if (event.getCode() == KeyCode.ENTER){
-                questionIndex = Integer.parseInt(questionDesigner.questionIndexTextField.getText());
-                questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler,questionIndex);
-            }
-        });
-
-        questionDesigner.nextQuestion.setOnAction((event -> {
-            if(questionIndex<maxQuestionIndex-1){
-                questionIndex++;
-                questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler,questionIndex);
-            }
-        }));
-
-        questionDesigner.prevQuestion.setOnAction((event -> {
-            if(questionIndex>=1){
-                questionIndex--;
-                questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler,questionIndex);
-            }
-        }));
-
-        questionDesigner.previewQuestion.setOnAction(event -> {
+            questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler, questionIndex);
             try {
                 isReviewAnswers = true;
                 isQuestionDesign = true;
@@ -818,6 +814,34 @@ public class PageVBoxHandler {
             }
         });
 
+        questionDesigner.questionIndexTextField.setOnKeyReleased(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                questionIndex = Integer.parseInt(questionDesigner.questionIndexTextField.getText());
+                questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler, questionIndex);
+                updatePreviewPage();
+            }
+        });
+
+        questionDesigner.nextQuestion.setOnAction((event -> {
+            if (questionIndex < maxQuestionIndex - 1) {
+                questionIndex++;
+                questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler, questionIndex);
+                updatePreviewPage();
+            }
+        }));
+
+        questionDesigner.prevQuestion.setOnAction((event -> {
+            if (questionIndex >= 1) {
+                questionIndex--;
+                questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler, questionIndex);
+                updatePreviewPage();
+            }
+        }));
+
         return resultVBox;
+    }
+
+    private static void updatePreviewPage(){
+        previewQuestionButton.fire();
     }
 }
