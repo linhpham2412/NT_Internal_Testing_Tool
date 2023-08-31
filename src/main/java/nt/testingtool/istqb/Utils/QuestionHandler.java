@@ -31,6 +31,37 @@ public class QuestionHandler {
     public static String imageFolderAbsolutePath;
     public static String[] questionStringAnswer;
     public static boolean[] questionBooleanIsAnswerCorrect;
+    public static String isMultiHeaderText = "";
+    public static String isAnswer1CorrectHeaderText = "";
+    public static String isAnswer2CorrectHeaderText = "";
+    public static String isAnswer3CorrectHeaderText = "";
+    public static String isAnswer4CorrectHeaderText = "";
+    public static String isAnswer5CorrectHeaderText = "";
+    public static String isAnswer6CorrectHeaderText = "";
+    public static String isAnswer7CorrectHeaderText = "";
+    public static String isAnswer8CorrectHeaderText = "";
+    public static String isAnswer9CorrectHeaderText = "";
+    public static String isAnswer10CorrectHeaderText = "";
+
+    public static QuestionDataModel getTemporaryChangeQuestion() {
+        return temporaryChangeQuestion;
+    }
+
+    public static void setTemporaryChangeQuestion(QuestionDataModel temporaryChangeQuestion) {
+        QuestionHandler.temporaryChangeQuestion = temporaryChangeQuestion;
+    }
+
+    public static QuestionDataModel temporaryChangeQuestion;
+
+    public static int getCurrentQuestionPreviewIndex() {
+        return currentQuestionPreviewIndex;
+    }
+
+    public static void setCurrentQuestionPreviewIndex(int currentQuestionPreviewIndex) {
+        QuestionHandler.currentQuestionPreviewIndex = currentQuestionPreviewIndex;
+    }
+
+    public static int currentQuestionPreviewIndex = 0;
     public static int[][] selectedAnswer;
     public static int[][] correctAnswer;
     //Question Field items
@@ -102,7 +133,7 @@ public class QuestionHandler {
         correctAnswer = new int[getNumberOfQuestionsPerQuestionBank()][getMaxNumberOfAnswerElementsInQuestionBank()];
     }
 
-    public QuestionDataModel[] getquestionDataModels(){
+    public QuestionDataModel[] getquestionDataModels() {
         return questionDataModels;
     }
 
@@ -173,7 +204,7 @@ public class QuestionHandler {
         return fullListOfISTQBTypeReadFromData;
     }
 
-    public void readAndMapQuestionDataFromFileToDataObject(File readFile){
+    public void readAndMapQuestionDataFromFileToDataObject(File readFile) {
         File dataTextFileName = readFile;
         questionDataModels = new QuestionDataModel[1];
         int numberOfQuestionBanksInGroup = 0;
@@ -184,12 +215,23 @@ public class QuestionHandler {
                 try {
                     String[] readList = Arrays.stream(readData.split("\\|"))
                             .map(e -> e.trim()).collect(Collectors.toList()).toArray(new String[0]);
-//                    if (!readList[1].equals("Group")) {
-                        listOfISTQBTypeReadFromData.add(readList[1]);
-                        questionDataModels[numberOfQuestionBanksInGroup] = readAndAddQuestionsToQuestionBank(readList);
-                        numberOfQuestionBanksInGroup++;
-                        questionDataModels = Arrays.copyOf(questionDataModels, numberOfQuestionBanksInGroup + 1);
-//                    }
+                    if (readList[1].equals("Group")) {
+                        isMultiHeaderText = readList[12];
+                        isAnswer1CorrectHeaderText = readList[13];
+                        isAnswer2CorrectHeaderText = readList[15];
+                        isAnswer3CorrectHeaderText = readList[17];
+                        isAnswer4CorrectHeaderText = readList[19];
+                        isAnswer5CorrectHeaderText = readList[21];
+                        isAnswer6CorrectHeaderText = readList[23];
+                        isAnswer7CorrectHeaderText = readList[25];
+                        isAnswer8CorrectHeaderText = readList[27];
+                        isAnswer9CorrectHeaderText = readList[29];
+                        isAnswer10CorrectHeaderText = readList[31];
+                    }
+                    listOfISTQBTypeReadFromData.add(readList[1]);
+                    questionDataModels[numberOfQuestionBanksInGroup] = readAndAddQuestionsToQuestionBank(readList);
+                    numberOfQuestionBanksInGroup++;
+                    questionDataModels = Arrays.copyOf(questionDataModels, numberOfQuestionBanksInGroup + 1);
                 } catch (Exception e) {
                 }
             }
@@ -402,13 +444,14 @@ public class QuestionHandler {
 
     private String checkNewLineSymbolInDataToReplaceWithLineSeparator(String columnData) {
         if (columnData.contains("\\n")) {
-            String[] splitedStringsBasedOnNewLine = columnData.split("\\\\n");
-            columnData = "";
-            for (String line : splitedStringsBasedOnNewLine) {
-                columnData += line + System.lineSeparator();
-            }
+            columnData = convertAllEnterSymbolInTextToSpecialCharacter(columnData);
+            columnData = QuestionDesigner.convertEnterCharacterToReview(columnData);
         }
         return columnData;
+    }
+
+    private String convertAllEnterSymbolInTextToSpecialCharacter(String textToConvert){
+        return textToConvert.replaceAll("\\\\n","¶");
     }
 
     private boolean convertDataToBoolean(String dataToConvert) {
@@ -439,5 +482,9 @@ public class QuestionHandler {
 
     private int convertBooleanToOneOrZero(boolean booleanToConvert) {
         return (booleanToConvert) ? 1 : 0;
+    }
+
+    public String convertBooleanToSaveFormat(boolean booleanToConvert) {
+        return (booleanToConvert) ? "Y" : "";
     }
 }

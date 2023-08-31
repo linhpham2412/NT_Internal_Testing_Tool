@@ -20,6 +20,7 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import net.lingala.zip4j.exception.ZipException;
+import nt.testingtool.istqb.datamodel.QuestionDataModel;
 import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.ImageWriteException;
 
@@ -38,6 +39,7 @@ import static nt.testingtool.istqb.Utils.EncryptDecryptBased64.decryptedBase64Te
 import static nt.testingtool.istqb.Utils.EncryptDecryptBased64.encryptTextBase64WithSecretKey;
 import static nt.testingtool.istqb.Utils.ImageCaptureHandler.*;
 import static nt.testingtool.istqb.Utils.ProjectConfiguration.*;
+import static nt.testingtool.istqb.Utils.QuestionDesigner.*;
 import static nt.testingtool.istqb.Utils.QuestionHandler.*;
 import static nt.testingtool.istqb.Utils.TestingToolUtils.*;
 import static org.apache.commons.io.FileUtils.cleanDirectory;
@@ -52,8 +54,10 @@ public class PageVBoxHandler {
     static int questionIndex = 0;
     static int maxQuestionIndex = 0;
     static boolean isQuestionDesign = false;
+    static boolean isQuestionTempCheck = false;
     static Stage newStage = new Stage();
     static Button previewQuestionButton = new Button();
+    static File questionBank = new File("");
 
 
     public static void changeStageAndScene(ActionEvent event, VBox layoutVBoxContainer, String sceneTitle) {
@@ -517,7 +521,7 @@ public class PageVBoxHandler {
         HBox timerArea = new HBox();
         HBox.setMargin(timerValue, new Insets(5, 5, 5, 5));
         HBox.setMargin(timerProgressBar, new Insets(15, 15, 15, 15));
-        if (isQuestionDesign){
+        if (isQuestionDesign) {
             timerArea.getChildren().add(previewQuestion);
         }
         timerArea.getChildren().add(timerValue);
@@ -535,8 +539,14 @@ public class PageVBoxHandler {
         previewQuestionButton = previewQuestion;
 
         //Set up Pagination question pages
-        pagination = new Pagination(getNumberOfQuestionsPerQuestionBank());
-        pagination.setMaxPageIndicatorCount(getNumberOfQuestionsPerQuestionBank());
+        if (isQuestionDesign) {
+            pagination = new Pagination(questionIndex);
+            setCurrentQuestionPreviewIndex(questionIndex);
+            pagination.setMaxPageIndicatorCount(1);
+        } else {
+            pagination = new Pagination(getNumberOfQuestionsPerQuestionBank());
+            pagination.setMaxPageIndicatorCount(getNumberOfQuestionsPerQuestionBank());
+        }
         pagination.getStyleClass().add(Pagination.STYLE_CLASS_BULLET);
         pagination.setPageFactory(TestingToolUtils::getQuestionPages);
         pagination.setMaxPageIndicatorCount(maxQuestionPerPagination);
@@ -794,23 +804,173 @@ public class PageVBoxHandler {
         utilQuestionHandler = initQuestionHandler();
         QuestionDesigner questionDesigner = new QuestionDesigner();
         VBox resultVBox = questionDesigner.generateElements();
+
+        questionDesigner.saveChangesQuestion.setOnAction(event -> {
+            QuestionDataModel[] writtingQuestions = utilQuestionHandler.getquestionDataModels();
+            String separator = "|";
+            StringBuilder lineBuilder = new StringBuilder();
+            for (int i = 0; i < maxQuestionIndex; i++) {
+                if (i == 0) {
+                    lineBuilder.append(separator).append(utilQuestionHandler.getFullListOfISTQBTypeReadFromData().get(i))
+                            .append(separator).append(writtingQuestions[i].questionTitle1)
+                            .append(separator).append(writtingQuestions[i].questionTitle2)
+                            .append(separator).append(writtingQuestions[i].questionTitle3)
+                            .append(separator).append(writtingQuestions[i].questionTitle4)
+                            .append(separator).append(writtingQuestions[i].questionTitle5)
+                            .append(separator).append(writtingQuestions[i].questionTitle6)
+                            .append(separator).append(writtingQuestions[i].questionTitle7)
+                            .append(separator).append(writtingQuestions[i].questionTitle8)
+                            .append(separator).append(writtingQuestions[i].questionTitle9)
+                            .append(separator).append(writtingQuestions[i].questionTitle10)
+                            .append(separator).append(isMultiHeaderText)
+                            .append(separator).append(isAnswer1CorrectHeaderText)
+                            .append(separator).append(writtingQuestions[i].questionAnswer1)
+                            .append(separator).append(isAnswer2CorrectHeaderText)
+                            .append(separator).append(writtingQuestions[i].questionAnswer2)
+                            .append(separator).append(isAnswer3CorrectHeaderText)
+                            .append(separator).append(writtingQuestions[i].questionAnswer3)
+                            .append(separator).append(isAnswer4CorrectHeaderText)
+                            .append(separator).append(writtingQuestions[i].questionAnswer4)
+                            .append(separator).append(isAnswer5CorrectHeaderText)
+                            .append(separator).append(writtingQuestions[i].questionAnswer5)
+                            .append(separator).append(isAnswer6CorrectHeaderText)
+                            .append(separator).append(writtingQuestions[i].questionAnswer6)
+                            .append(separator).append(isAnswer7CorrectHeaderText)
+                            .append(separator).append(writtingQuestions[i].questionAnswer7)
+                            .append(separator).append(isAnswer8CorrectHeaderText)
+                            .append(separator).append(writtingQuestions[i].questionAnswer8)
+                            .append(separator).append(isAnswer9CorrectHeaderText)
+                            .append(separator).append(writtingQuestions[i].questionAnswer9)
+                            .append(separator).append(isAnswer10CorrectHeaderText)
+                            .append(separator).append(writtingQuestions[i].questionAnswer10).append(separator).append(System.lineSeparator());
+                } else {
+                    lineBuilder.append(separator).append(utilQuestionHandler.getFullListOfISTQBTypeReadFromData().get(i))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionTitle1))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionTitle2))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionTitle3))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionTitle4))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionTitle5))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionTitle6))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionTitle7))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionTitle8))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionTitle9))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionTitle10))
+                            .append(separator).append(utilQuestionHandler.convertBooleanToSaveFormat(writtingQuestions[i].isMultipleChoice))
+                            .append(separator).append(utilQuestionHandler.convertBooleanToSaveFormat(writtingQuestions[i].isQuestionAnswer1Correct))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionAnswer1))
+                            .append(separator).append(utilQuestionHandler.convertBooleanToSaveFormat(writtingQuestions[i].isQuestionAnswer2Correct))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionAnswer2))
+                            .append(separator).append(utilQuestionHandler.convertBooleanToSaveFormat(writtingQuestions[i].isQuestionAnswer3Correct))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionAnswer3))
+                            .append(separator).append(utilQuestionHandler.convertBooleanToSaveFormat(writtingQuestions[i].isQuestionAnswer4Correct))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionAnswer4))
+                            .append(separator).append(utilQuestionHandler.convertBooleanToSaveFormat(writtingQuestions[i].isQuestionAnswer5Correct))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionAnswer5))
+                            .append(separator).append(utilQuestionHandler.convertBooleanToSaveFormat(writtingQuestions[i].isQuestionAnswer6Correct))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionAnswer6))
+                            .append(separator).append(utilQuestionHandler.convertBooleanToSaveFormat(writtingQuestions[i].isQuestionAnswer7Correct))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionAnswer7))
+                            .append(separator).append(utilQuestionHandler.convertBooleanToSaveFormat(writtingQuestions[i].isQuestionAnswer8Correct))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionAnswer8))
+                            .append(separator).append(utilQuestionHandler.convertBooleanToSaveFormat(writtingQuestions[i].isQuestionAnswer9Correct))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionAnswer9))
+                            .append(separator).append(utilQuestionHandler.convertBooleanToSaveFormat(writtingQuestions[i].isQuestionAnswer10Correct))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionAnswer10)).append(separator).append(System.lineSeparator());
+                }
+            }
+            try {
+                String textToWrite = convertEnterCharacterToSave(String.valueOf(lineBuilder));
+                writeDataToTextFile(questionBank, textToWrite);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
         questionDesigner.openFileButton.setOnAction(event -> {
             try {
                 fileChooser.setInitialDirectory(new File(getCurrentPath()));
+                File imagesFolder = new File(getCurrentPath() + "\\Images");
+                imageFolderAbsolutePath = imagesFolder.getAbsolutePath();
             } catch (IOException ignored) {
             }
-            File questionBank = fileChooser.showOpenDialog(null);
+            questionBank = new File("");
+            questionBank = fileChooser.showOpenDialog(null);
             questionIndex = 1;
             questionDesigner.getQuestionBankFileName().setText(questionBank.getName());
             utilQuestionHandler.readAndMapQuestionDataFromFileToDataObject(questionBank);
             maxQuestionIndex = utilQuestionHandler.getquestionDataModels().length;
             questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler, questionIndex);
+            utilQuestionHandler.getListOfISTQBTypeReadFromData().stream()
+                    .map(e -> questionDesigner.checkBoxGroup.getItems().add(e)).collect(Collectors.toList());
+            questionDesigner.checkBoxGroup.setStyle("-fx-font-size: 16");
             try {
                 isReviewAnswers = true;
                 isQuestionDesign = true;
+                isQuestionTempCheck = false;
                 openNewStageAndScene(setupLayoutPageExam(), "Exam Page Preview");
             } catch (Exception e) {
                 throw new RuntimeException(e);
+            }
+            newStage.setOnCloseRequest(event1 -> {
+                newStage = null;
+            });
+        });
+
+        questionDesigner.applyTempChange.setOnAction(event -> {
+            if (getTemporaryChangeQuestion() != null) {
+                utilQuestionHandler.getquestionDataModels()[questionIndex] = getTemporaryChangeQuestion();
+            }
+        });
+
+        questionDesigner.checkTempChange.setOnAction(event -> {
+            QuestionDataModel tempChanges = new QuestionDataModel();
+            tempChanges.questionTitle1 = convertEnterCharacterToReview(questionDesigner.textArea1.getText());
+            tempChanges.questionTitle2 = convertEnterCharacterToReview(questionDesigner.textArea2.getText());
+            tempChanges.questionTitle3 = convertEnterCharacterToReview(questionDesigner.textArea3.getText());
+            tempChanges.questionTitle4 = convertEnterCharacterToReview(questionDesigner.textArea4.getText());
+            tempChanges.questionTitle5 = convertEnterCharacterToReview(questionDesigner.textArea5.getText());
+            tempChanges.questionTitle6 = convertEnterCharacterToReview(questionDesigner.textArea6.getText());
+            tempChanges.questionTitle7 = convertEnterCharacterToReview(questionDesigner.textArea7.getText());
+            tempChanges.questionTitle8 = convertEnterCharacterToReview(questionDesigner.textArea8.getText());
+            tempChanges.questionTitle9 = convertEnterCharacterToReview(questionDesigner.textArea9.getText());
+            tempChanges.questionTitle10 = convertEnterCharacterToReview(questionDesigner.textArea10.getText());
+            tempChanges.isMultipleChoice = questionDesigner.isMultiAnswersCheckbox.isSelected();
+            tempChanges.questionAnswer1 = convertEnterCharacterToReview(questionDesigner.textAreaAnswer1.getText());
+            tempChanges.isQuestionAnswer1Correct = questionDesigner.isAnswer1Correct.isSelected();
+            tempChanges.questionAnswer2 = convertEnterCharacterToReview(questionDesigner.textAreaAnswer2.getText());
+            tempChanges.isQuestionAnswer2Correct = questionDesigner.isAnswer2Correct.isSelected();
+            tempChanges.questionAnswer3 = convertEnterCharacterToReview(questionDesigner.textAreaAnswer3.getText());
+            tempChanges.isQuestionAnswer3Correct = questionDesigner.isAnswer3Correct.isSelected();
+            tempChanges.questionAnswer4 = convertEnterCharacterToReview(questionDesigner.textAreaAnswer4.getText());
+            tempChanges.isQuestionAnswer4Correct = questionDesigner.isAnswer4Correct.isSelected();
+            tempChanges.questionAnswer5 = convertEnterCharacterToReview(questionDesigner.textAreaAnswer5.getText());
+            tempChanges.isQuestionAnswer5Correct = questionDesigner.isAnswer5Correct.isSelected();
+            tempChanges.questionAnswer6 = convertEnterCharacterToReview(questionDesigner.textAreaAnswer6.getText());
+            tempChanges.isQuestionAnswer6Correct = questionDesigner.isAnswer6Correct.isSelected();
+            tempChanges.questionAnswer7 = convertEnterCharacterToReview(questionDesigner.textAreaAnswer7.getText());
+            tempChanges.isQuestionAnswer7Correct = questionDesigner.isAnswer7Correct.isSelected();
+            tempChanges.questionAnswer8 = convertEnterCharacterToReview(questionDesigner.textAreaAnswer8.getText());
+            tempChanges.isQuestionAnswer8Correct = questionDesigner.isAnswer8Correct.isSelected();
+            tempChanges.questionAnswer9 = convertEnterCharacterToReview(questionDesigner.textAreaAnswer9.getText());
+            tempChanges.isQuestionAnswer9Correct = questionDesigner.isAnswer9Correct.isSelected();
+            tempChanges.questionAnswer10 = convertEnterCharacterToReview(questionDesigner.textAreaAnswer10.getText());
+            tempChanges.isQuestionAnswer10Correct = questionDesigner.isAnswer10Correct.isSelected();
+            setTemporaryChangeQuestion(tempChanges);
+            isReviewAnswers = true;
+            isQuestionDesign = true;
+            isQuestionTempCheck = true;
+            if (newStage == null) {
+                try {
+                    newStage = new Stage();
+                    openNewStageAndScene(setupLayoutPageExam(), "Exam Page Preview");
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                newStage.setOnCloseRequest(event1 -> {
+                    newStage = null;
+                });
+            } else {
+                updatePreviewPage();
             }
         });
 
@@ -818,6 +978,7 @@ public class PageVBoxHandler {
             if (event.getCode() == KeyCode.ENTER) {
                 questionIndex = Integer.parseInt(questionDesigner.questionIndexTextField.getText());
                 questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler, questionIndex);
+                isQuestionTempCheck = false;
                 updatePreviewPage();
             }
         });
@@ -826,14 +987,34 @@ public class PageVBoxHandler {
             if (questionIndex < maxQuestionIndex - 1) {
                 questionIndex++;
                 questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler, questionIndex);
+                isQuestionTempCheck = false;
                 updatePreviewPage();
             }
         }));
 
         questionDesigner.prevQuestion.setOnAction((event -> {
-            if (questionIndex >= 1) {
+            if (questionIndex > 1) {
                 questionIndex--;
                 questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler, questionIndex);
+                isQuestionTempCheck = false;
+                updatePreviewPage();
+            }
+        }));
+
+        questionDesigner.firstQuestion.setOnAction((event -> {
+            if (questionIndex >= 1) {
+                questionIndex = 1;
+                questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler, questionIndex);
+                isQuestionTempCheck = false;
+                updatePreviewPage();
+            }
+        }));
+
+        questionDesigner.lastQuestion.setOnAction((event -> {
+            if (questionIndex < maxQuestionIndex - 1) {
+                questionIndex = maxQuestionIndex - 1;
+                questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler, questionIndex);
+                isQuestionTempCheck = false;
                 updatePreviewPage();
             }
         }));
@@ -841,7 +1022,7 @@ public class PageVBoxHandler {
         return resultVBox;
     }
 
-    private static void updatePreviewPage(){
+    private static void updatePreviewPage() {
         previewQuestionButton.fire();
     }
 }

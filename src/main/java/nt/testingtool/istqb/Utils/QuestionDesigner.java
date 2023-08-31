@@ -19,39 +19,9 @@ public class QuestionDesigner {
 
     Label questionBankFileName = new Label("file name");
     TextField questionIndexTextField = new TextField();
-
-    public Button getOpenFileButton() {
-        return openFileButton;
-    }
-
     Button openFileButton = new Button("Open File");
-
-//    public Button getPreviewQuestion() {
-//        return previewQuestion;
-//    }
-//
-//    Button previewQuestion = new Button("Preview");
-
-    public Button getPrevQuestion() {
-        return prevQuestion;
-    }
-
-    public Button getNextQuestion() {
-        return nextQuestion;
-    }
-
-    public Button getFirstQuestion() {
-        return firstQuestion;
-    }
-
-    public Button getLastQuestion() {
-        return lastQuestion;
-    }
-
-    public Button getAddQuestion() {
-        return addQuestion;
-    }
-
+    Button applyTempChange = new Button("Save to Model");
+    Button checkTempChange = new Button("!");
     Button prevQuestion = new Button("<");
     Button nextQuestion = new Button(">");
     Button firstQuestion = new Button("|<");
@@ -89,6 +59,9 @@ public class QuestionDesigner {
     TextArea textAreaAnswer9 = new TextArea();
     CheckBox isAnswer10Correct = new CheckBox("Is Correct");
     TextArea textAreaAnswer10 = new TextArea();
+    ComboBox checkBoxGroup = new ComboBox();
+    Button saveChangesQuestion = new Button("Write Changes to File");
+    Button applyGroupButton = new Button("<<");
 
     public VBox generateElements() {
         Pane questionDesignerPaneHeader = new Pane();
@@ -98,8 +71,8 @@ public class QuestionDesigner {
         HBox qdHeaderPane = new HBox();
         HBox qdLeftHeader = new HBox();
         qdLeftHeader.setAlignment(Pos.CENTER_LEFT);
-        qdLeftHeader.setMinWidth(screenWidth / 1.1);
-        qdLeftHeader.setMaxWidth(screenWidth / 1.1);
+        qdLeftHeader.setMinWidth(screenWidth / 1.2);
+        qdLeftHeader.setMaxWidth(screenWidth / 1.2);
         HBox qdRightHeader = new HBox();
         qdRightHeader.setAlignment(Pos.CENTER_RIGHT);
         qdHeaderPane.getChildren().add(qdLeftHeader);
@@ -116,39 +89,38 @@ public class QuestionDesigner {
         qdLeftHeader.getChildren().add(selectFile);
         qdLeftHeader.getChildren().add(openFileButton);
         qdLeftHeader.getChildren().add(questionBankFileName);
-//        Button previewQuestion = new Button("Preview");
-//        previewQuestion.setFont(toolFont);
-//        previewQuestion.setStyle(cssGreenColorBGValue);
-//        qdRightHeader.getChildren().add(previewQuestion);
+        saveChangesQuestion.setFont(toolFont);
+        saveChangesQuestion.setStyle(cssGreenColorBGValue);
+        qdRightHeader.getChildren().add(saveChangesQuestion);
         //Command pane
         HBox commandPane = new HBox();
         commandPane.setPrefHeight(screenHeight / 16);
         commandPane.setTranslateY(screenHeight / 16);
 
         HBox leftCommandPane = new HBox();
-        leftCommandPane.setPrefWidth(screenWidth / 1.5);
+        leftCommandPane.setPrefWidth(screenWidth / 2);
         Label commandText = new Label("Command buttons will be placed here");
         commandText.setFont(toolFont);
-        HBox.setMargin(commandText, new Insets(10, 10, 10, 10));
         leftCommandPane.getChildren().add(commandText);
 
         HBox rightCommandPane = new HBox();
-        rightCommandPane.setPrefWidth(screenWidth / 3);
-//        Button prevQuestion = new Button("<");
-//        Button nextQuestion = new Button(">");
-//        Button firstQuestion = new Button("|<");
-//        Button lastQuestion = new Button(">|");
-//        Button addQuestion = new Button("+");
-//        TextField questionIndex = new TextField();
+        rightCommandPane.setPrefWidth(screenWidth / 2);
         questionIndexTextField.setFont(toolFont);
         questionIndexTextField.setPrefWidth(screenWidth / 8);
         questionIndexTextField.setAlignment(Pos.CENTER);
+        applyTempChange.setFont(toolFont);
+        applyTempChange.setStyle(cssGreenColorBGValue);
+        checkTempChange.setFont(toolFont);
         prevQuestion.setFont(toolFont);
         nextQuestion.setFont(toolFont);
         firstQuestion.setFont(toolFont);
         lastQuestion.setFont(toolFont);
         addQuestion.setFont(toolFont);
         HBox.setMargin(addQuestion, new Insets(0, 0, 0, 10));
+        HBox.setMargin(applyTempChange, new Insets(0, 10, 0, 0));
+        HBox.setMargin(checkTempChange, new Insets(0, 10, 0, 0));
+        rightCommandPane.getChildren().add(applyTempChange);
+        rightCommandPane.getChildren().add(checkTempChange);
         rightCommandPane.getChildren().add(firstQuestion);
         rightCommandPane.getChildren().add(prevQuestion);
         rightCommandPane.getChildren().add(questionIndexTextField);
@@ -156,6 +128,8 @@ public class QuestionDesigner {
         rightCommandPane.getChildren().add(lastQuestion);
         rightCommandPane.getChildren().add(addQuestion);
 
+        HBox.setMargin(leftCommandPane, new Insets(5, 5, 5, 5));
+        HBox.setMargin(rightCommandPane, new Insets(5, 5, 5, 5));
         commandPane.getChildren().add(leftCommandPane);
         commandPane.getChildren().add(rightCommandPane);
 
@@ -171,6 +145,7 @@ public class QuestionDesigner {
 
         ScrollPane designerScrollPane = new ScrollPane();
         designerScrollPane.setPrefWidth(screenWidth);
+        designerScrollPane.setStyle("-fx-font-size: 18");
         HBox.setMargin(designerScrollPane, new Insets(10, 10, 10, 10));
 
         designPane.getChildren().add(designerScrollPane);
@@ -184,10 +159,14 @@ public class QuestionDesigner {
 //        TextField selectedGroupName = new TextField();
         selectedGroupName.setFont(toolFont);
         selectedGroupName.setPrefSize(screenWidth / 2, 50);
-        ComboBox checkBoxGroup = new ComboBox();
-        checkBoxGroup.setPrefSize(screenWidth / 2.4, 50);
+//        ComboBox checkBoxGroup = new ComboBox();
+        checkBoxGroup.setPrefSize(screenWidth / 3, 50);
+//        Button applyGroupButton = new Button("<<");
+        applyGroupButton.setFont(toolFont);
+        HBox.setMargin(applyGroupButton, new Insets(0, 10, 0, 10));
         titleGroupHBox.getChildren().add(titleGroupLabel);
         titleGroupHBox.getChildren().add(selectedGroupName);
+        titleGroupHBox.getChildren().add(applyGroupButton);
         titleGroupHBox.getChildren().add(checkBoxGroup);
 
         HBox questionBox = new HBox();
@@ -531,18 +510,32 @@ public class QuestionDesigner {
         isAnswer10Correct.setSelected(questionDataModels[questionIndex].isQuestionAnswer10Correct);
     }
 
-    private String getAllCharsInString(String stringToGet) {
-        char[] charList = stringToGet.toCharArray();
+    public static String getAllCharsInString(String stringToGet) {
         StringBuilder resultString = new StringBuilder("");
-        for (int i = 0; i < charList.length; i++) {
-            if (charList[i] == 13) {
+        char[] charList = new char[0];
+        try {
+            charList = stringToGet.toCharArray();
+            for (int i = 0; i < charList.length; i++) {
+                if (charList[i] == 13) {
 //                resultString.append("\\r");
-            } else if (charList[i] == 10) {
-                resultString.append("\\n");
-            } else {
-                resultString.append(charList[i]);
+                } else if (charList[i] == 10) {
+//                resultString.append("\\n");
+                    resultString.append("¶");
+                } else {
+                    resultString.append(charList[i]);
+                }
             }
+        } catch (NullPointerException e) {
+            resultString = new StringBuilder(" ");
         }
         return String.valueOf(resultString);
+    }
+
+    public static String convertEnterCharacterToReview(String textToConvert) {
+        return textToConvert.replaceAll("¶", System.lineSeparator()).trim();
+    }
+
+    public static String convertEnterCharacterToSave(String textToConvert) {
+        return textToConvert.replaceAll("¶", "\\\\n").trim();
     }
 }

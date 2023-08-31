@@ -75,14 +75,16 @@ public class TestingToolUtils {
         //setup and clean up data
         currentPageIndex = pageIndex;
         initQuestionElements(pageIndex);
-//        if (!isQuestionDesign) {
         //map question data to local variables
         mapValueFromTestingQuestionToLocalVariablesByPageIndex(pageIndex);
-//        }else{
-//            mapValueFromTestingQuestionToLocalVariablesByDesignFields();
-//        }
         //Add more question components inside vbox
-        Label questionNumber = new Label("Question " + (pageIndex + 1) + ":");
+        Label questionNumber = new Label("");
+        if (isQuestionDesign) {
+            questionNumber.setText("Question " + getCurrentQuestionPreviewIndex() + ":");
+        } else {
+            questionNumber.setText("Question " + (pageIndex + 1) + ":");
+        }
+//        questionNumber = new Label("Question " + (pageIndex + 1) + ":");
         assignQuestionDataFromClassToTitleLabelOrImage();
         String kindOfChoice = (isQuestionMultipleChoices()) ? "[Multi Choice]" : "[Single choice]";
         Label answerLabel = new Label("Answer: " + kindOfChoice);
@@ -166,8 +168,10 @@ public class TestingToolUtils {
 
     private static void mapValueFromTestingQuestionToLocalVariablesByPageIndex(int questionIndex) {
         QuestionDataModel testingQuestion = new QuestionDataModel();
-        if (isQuestionDesign) {
+        if (isQuestionDesign && !isQuestionTempCheck) {
             testingQuestion = utilQuestionHandler.getquestionDataModels()[PageVBoxHandler.questionIndex];
+        } else if (isQuestionTempCheck) {
+            testingQuestion = getTemporaryChangeQuestion();
         } else {
             testingQuestion = testingQuestions[questionIndex];
         }
@@ -202,10 +206,6 @@ public class TestingToolUtils {
         questionBooleanIsAnswerCorrect[7] = testingQuestion.isQuestionAnswer8Correct;
         questionBooleanIsAnswerCorrect[8] = testingQuestion.isQuestionAnswer9Correct;
         questionBooleanIsAnswerCorrect[9] = testingQuestion.isQuestionAnswer10Correct;
-    }
-
-    private static void mapValueFromTestingQuestionToLocalVariablesByDesignFields() {
-
     }
 
     private static void assignQuestionDataFromClassToTitleLabelOrImage() {
@@ -310,7 +310,7 @@ public class TestingToolUtils {
     public static void assignAnswersDataFromClassToCheckBoxOrRadioButton(int pageIndex) {
         int answerIndex = 0;
         for (int i = 0; i < 5; i++) {
-            if (Objects.equals(questionStringAnswer[answerIndex], "")) {
+            if ((Objects.equals(questionStringAnswer[answerIndex], "")) || questionStringAnswer[answerIndex] == null) {
                 break;
             } else if (isQuestionMultipleChoices) {
                 answerHBoxContainers[i] = new HBox();
