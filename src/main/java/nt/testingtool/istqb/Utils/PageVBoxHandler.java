@@ -512,8 +512,14 @@ public class PageVBoxHandler {
             getTimerTimeLine().setCycleCount(Animation.INDEFINITE);
             getTimerTimeLine().play();
         } else {
-//            timerValue.setText("Time left 00:00");
-            previewQuestion.setVisible(true);
+            timerValue.setText("Time left 00:00");
+            if (isQuestionDesign){
+                timerValue.setVisible(false);
+                previewQuestion.setVisible(true);
+            }else {
+                timerValue.setVisible(true);
+                previewQuestion.setVisible(false);
+            }
             timerProgressBar.setProgress(1);
             isTestingEnd = true;
         }
@@ -620,6 +626,7 @@ public class PageVBoxHandler {
         reviewAnswerButton.setOnAction(event -> {
             try {
                 isTestingEnd = false;
+                isQuestionDesign = false;
                 isReviewAnswers = true;
                 changeStageAndScene(event, setupLayoutPageExam()
                         , "Answers Review Page of: " + selectTestingTypeComboBox.getValue());
