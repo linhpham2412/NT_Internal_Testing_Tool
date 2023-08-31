@@ -209,12 +209,13 @@ public class TestingToolUtils {
     }
 
     private static void assignQuestionDataFromClassToTitleLabelOrImage() {
+        String fileHeaderSymbol = "file:///";
         for (int i = 0; i < 10; i++) {
             if (Objects.equals(questionStringTitle[i], "")) {
                 break;
             } else if (questionStringTitle[i].contains("Images\\")) {
                 questionStringTitle[i] = questionStringTitle[i]
-                        .replace("Images\\", "file:///" + imageFolderAbsolutePath);
+                        .replace("Images\\", fileHeaderSymbol + imageFolderAbsolutePath);
                 questionImage[i] = new ImageView();
                 questionImage[i].setImage(new Image(questionStringTitle[i]));
                 checkImageSizeAndResizeIfLongerThanScreenSize(getObjectWidthInScrollPane(), screenHeight / 2
@@ -226,6 +227,14 @@ public class TestingToolUtils {
                 questionGridTable[i].setGridLinesVisible(true);
                 renderQuestionGridTable(questionGridTable[i], tableRowData);
                 questionObjects[i] = questionGridTable[i];
+            } else if (questionStringTitle[i].contains("<InsertingImage>")) {
+                questionStringTitle[i] = questionStringTitle[i].replace("<InsertingImage>",fileHeaderSymbol);
+                questionStringTitle[i] = questionStringTitle[i].substring(0,questionStringTitle[i].indexOf("=")).trim();
+                questionImage[i] = new ImageView();
+                questionImage[i].setImage(new Image(questionStringTitle[i]));
+                checkImageSizeAndResizeIfLongerThanScreenSize(getObjectWidthInScrollPane(), screenHeight / 2
+                        , questionImage[i]);
+                questionObjects[i] = questionImage[i];
             } else {
                 questionTitle[i] = new Label(questionStringTitle[i]);
                 questionTitle[i].setPrefWidth(getObjectWidthInScrollPane());

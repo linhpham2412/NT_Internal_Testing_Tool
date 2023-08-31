@@ -58,6 +58,7 @@ public class PageVBoxHandler {
     static Stage newStage = new Stage();
     static Button previewQuestionButton = new Button();
     static File questionBank = new File("");
+    static File imagesFolder = new File("");
 
 
     public static void changeStageAndScene(ActionEvent event, VBox layoutVBoxContainer, String sceneTitle) {
@@ -513,10 +514,10 @@ public class PageVBoxHandler {
             getTimerTimeLine().play();
         } else {
             timerValue.setText("Time left 00:00");
-            if (isQuestionDesign){
+            if (isQuestionDesign) {
                 timerValue.setVisible(false);
                 previewQuestion.setVisible(true);
-            }else {
+            } else {
                 timerValue.setVisible(true);
                 previewQuestion.setVisible(false);
             }
@@ -529,8 +530,9 @@ public class PageVBoxHandler {
         HBox.setMargin(timerProgressBar, new Insets(15, 15, 15, 15));
         if (isQuestionDesign) {
             timerArea.getChildren().add(previewQuestion);
+        } else {
+            timerArea.getChildren().add(timerValue);
         }
-        timerArea.getChildren().add(timerValue);
         timerArea.getChildren().add(timerProgressBar);
 
         previewQuestion.setOnAction(event -> {
@@ -896,7 +898,7 @@ public class PageVBoxHandler {
         questionDesigner.openFileButton.setOnAction(event -> {
             try {
                 fileChooser.setInitialDirectory(new File(getCurrentPath()));
-                File imagesFolder = new File(getCurrentPath() + "\\Images");
+                imagesFolder = new File(getCurrentPath() + "\\Images");
                 imageFolderAbsolutePath = imagesFolder.getAbsolutePath();
             } catch (IOException ignored) {
             }
@@ -925,7 +927,13 @@ public class PageVBoxHandler {
 
         questionDesigner.applyTempChange.setOnAction(event -> {
             if (getTemporaryChangeQuestion() != null) {
-                utilQuestionHandler.getquestionDataModels()[questionIndex] = getTemporaryChangeQuestion();
+                try {
+                    utilQuestionHandler.getquestionDataModels()[questionIndex] = checkIfTitlesHasNewImageThenSaveToImagesFolder(getTemporaryChangeQuestion());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler, questionIndex);
+                updatePreviewPage();
             }
         });
 
@@ -1027,6 +1035,20 @@ public class PageVBoxHandler {
         }));
 
         return resultVBox;
+    }
+
+    private static QuestionDataModel checkIfTitlesHasNewImageThenSaveToImagesFolder(QuestionDataModel temporaryChangeQuestion) throws IOException {
+        temporaryChangeQuestion.questionTitle1 = (temporaryChangeQuestion.questionTitle1.matches("<InsertingImage>.+")) ? updateNewImageNameAndSaveToImageFolderInTitle(temporaryChangeQuestion.questionTitle1) : temporaryChangeQuestion.questionTitle1;
+        temporaryChangeQuestion.questionTitle2 = (temporaryChangeQuestion.questionTitle2.matches("<InsertingImage>.+")) ? updateNewImageNameAndSaveToImageFolderInTitle(temporaryChangeQuestion.questionTitle2) : temporaryChangeQuestion.questionTitle2;
+        temporaryChangeQuestion.questionTitle3 = (temporaryChangeQuestion.questionTitle3.matches("<InsertingImage>.+")) ? updateNewImageNameAndSaveToImageFolderInTitle(temporaryChangeQuestion.questionTitle3) : temporaryChangeQuestion.questionTitle3;
+        temporaryChangeQuestion.questionTitle4 = (temporaryChangeQuestion.questionTitle4.matches("<InsertingImage>.+")) ? updateNewImageNameAndSaveToImageFolderInTitle(temporaryChangeQuestion.questionTitle4) : temporaryChangeQuestion.questionTitle4;
+        temporaryChangeQuestion.questionTitle5 = (temporaryChangeQuestion.questionTitle5.matches("<InsertingImage>.+")) ? updateNewImageNameAndSaveToImageFolderInTitle(temporaryChangeQuestion.questionTitle5) : temporaryChangeQuestion.questionTitle5;
+        temporaryChangeQuestion.questionTitle6 = (temporaryChangeQuestion.questionTitle6.matches("<InsertingImage>.+")) ? updateNewImageNameAndSaveToImageFolderInTitle(temporaryChangeQuestion.questionTitle6) : temporaryChangeQuestion.questionTitle6;
+        temporaryChangeQuestion.questionTitle7 = (temporaryChangeQuestion.questionTitle7.matches("<InsertingImage>.+")) ? updateNewImageNameAndSaveToImageFolderInTitle(temporaryChangeQuestion.questionTitle7) : temporaryChangeQuestion.questionTitle7;
+        temporaryChangeQuestion.questionTitle8 = (temporaryChangeQuestion.questionTitle8.matches("<InsertingImage>.+")) ? updateNewImageNameAndSaveToImageFolderInTitle(temporaryChangeQuestion.questionTitle8) : temporaryChangeQuestion.questionTitle8;
+        temporaryChangeQuestion.questionTitle9 = (temporaryChangeQuestion.questionTitle9.matches("<InsertingImage>.+")) ? updateNewImageNameAndSaveToImageFolderInTitle(temporaryChangeQuestion.questionTitle9) : temporaryChangeQuestion.questionTitle9;
+        temporaryChangeQuestion.questionTitle10 = (temporaryChangeQuestion.questionTitle10.matches("<InsertingImage>.+")) ? updateNewImageNameAndSaveToImageFolderInTitle(temporaryChangeQuestion.questionTitle10) : temporaryChangeQuestion.questionTitle10;
+        return temporaryChangeQuestion;
     }
 
     private static void updatePreviewPage() {

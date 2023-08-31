@@ -3,14 +3,19 @@ package nt.testingtool.istqb.Utils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import nt.testingtool.istqb.datamodel.QuestionDataModel;
+import org.apache.commons.io.FileUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import static nt.testingtool.istqb.Utils.ProjectConfiguration.*;
+import static nt.testingtool.istqb.Utils.QuestionHandler.imageFolderAbsolutePath;
 
 public class QuestionDesigner {
     public Label getQuestionBankFileName() {
@@ -62,6 +67,7 @@ public class QuestionDesigner {
     ComboBox checkBoxGroup = new ComboBox();
     Button saveChangesQuestion = new Button("Write Changes to File");
     Button applyGroupButton = new Button("<<");
+//    Button insertImage = new Button("Add Image");
 
     public VBox generateElements() {
         Pane questionDesignerPaneHeader = new Pane();
@@ -81,7 +87,6 @@ public class QuestionDesigner {
         Label selectFile = new Label("Question File: ");
         selectFile.setFont(toolFont);
         HBox.setMargin(selectFile, new Insets(10, 10, 10, 10));
-//        Button openFile = new Button("Open File");
         openFileButton.setFont(toolFont);
         questionBankFileName = new Label("file name");
         questionBankFileName.setFont(toolFont);
@@ -98,10 +103,18 @@ public class QuestionDesigner {
         commandPane.setTranslateY(screenHeight / 16);
 
         HBox leftCommandPane = new HBox();
+        leftCommandPane.setAlignment(Pos.CENTER);
         leftCommandPane.setPrefWidth(screenWidth / 2);
-        Label commandText = new Label("Command buttons will be placed here");
+        Label commandText = new Label("Commands: Ctrl-1[Enter] | Ctrl-2[Insert Image] | Ctrl-3[Add/Edit Table]");
         commandText.setFont(toolFont);
+//        insertImage.setFont(toolFont);
+//        HBox.setMargin(insertImage,new Insets(0,5,5,20));
+//        Button addOrEditTable = new Button("Add/Edit Table");
+//        addOrEditTable.setFont(toolFont);
+//        HBox.setMargin(addOrEditTable,new Insets(0,5,5,5));
         leftCommandPane.getChildren().add(commandText);
+//        leftCommandPane.getChildren().add(insertImage);
+//        leftCommandPane.getChildren().add(addOrEditTable);
 
         HBox rightCommandPane = new HBox();
         rightCommandPane.setPrefWidth(screenWidth / 2);
@@ -183,6 +196,16 @@ public class QuestionDesigner {
         textArea1.setPrefSize(screenWidth / 1.1, screenHeight / 4);
         titleHBox1.getChildren().add(titleLabel1);
         titleHBox1.getChildren().add(textArea1);
+
+        textArea1.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.DIGIT1 && event.isControlDown()) {
+                addEnterSymbolToTextArea((TextArea) event.getSource());
+            } else if (event.getCode() == KeyCode.DIGIT2 && event.isControlDown()) {
+                selectAndAddImageURLToTextArea((TextArea) event.getSource());
+            } else if (event.getCode() == KeyCode.DIGIT3 && event.isControlDown()) {
+
+            }
+        });
 
         HBox titleHBox2 = new HBox();
         Label titleLabel2 = new Label("Title 02:");
@@ -472,6 +495,37 @@ public class QuestionDesigner {
         return resultVBox;
     }
 
+    private void selectAndAddImageURLToTextArea(TextArea source) {
+        try {
+            fileChooser.setInitialDirectory(new File(getCurrentPath()));
+        } catch (IOException ignored) {
+        }
+        File insertImageFile = new File("");
+        insertImageFile = fileChooser.showOpenDialog(null);
+        String currentURL = insertImageFile.getAbsolutePath();
+        int indexOfDot = currentURL.indexOf(".");
+        int lastIndexOfSlash = currentURL.lastIndexOf("\\")+1;
+        String imageExtension = currentURL.substring(indexOfDot,currentURL.length());
+        String imageName = currentURL.substring(lastIndexOfSlash,indexOfDot);
+        source.clear();
+        source.setText("<InsertingImage>"+currentURL+" => input name to save to Images Folder in here ["+imageName+"]"+imageExtension);
+    }
+
+
+    public void addEnterSymbolToTextArea(TextArea workingTextArea) {
+        String currentText = workingTextArea.getText();
+        IndexRange selected = workingTextArea.getSelection();
+        String enterSymbol = "¶";
+        if (selected.getStart() == selected.getEnd()) {
+            workingTextArea.setText(currentText.substring(0, selected.getStart()) + enterSymbol + currentText.substring(selected.getStart()));
+        } else {
+            workingTextArea.setText((currentText.substring(0, selected.getStart())) + enterSymbol + currentText.substring(selected.getEnd()));
+        }
+        workingTextArea.requestFocus();
+        workingTextArea.positionCaret(selected.getStart() + enterSymbol.length());
+    }
+
+
     public void displayQuestionDataInQuestionModelByIndex(QuestionHandler questionHandler, int questionIndex) {
         QuestionDataModel[] questionDataModels = questionHandler.getquestionDataModels();
         List<String> listOfGroupName = questionHandler.fullListOfISTQBTypeReadFromData;
@@ -537,5 +591,23 @@ public class QuestionDesigner {
 
     public static String convertEnterCharacterToSave(String textToConvert) {
         return textToConvert.replaceAll("¶", "\\\\n").trim();
+    }
+
+    public static String updateNewImageNameAndSaveToImageFolderInTitle(String titleContent) throws IOException {
+        titleContent = titleContent.replace("<InsertingImage>","");
+        String originalImageURL = titleContent.substring(0,titleContent.indexOf("=")).trim();
+        titleContent = titleContent.substring(titleContent.indexOf("["),titleContent.length());
+        String newName = titleContent
+                .replace("]","")
+                .replace("[","");
+        File tobeCopyImage = new File(originalImageURL);
+        File destinationFile = new File(imageFolderAbsolutePath+"/"+newName);
+        copyFileToNewLocation(tobeCopyImage,destinationFile);
+        titleContent = "Images\\\\"+newName;
+        return titleContent;
+    }
+
+    private static void copyFileToNewLocation(File fileToCopy, File destinationFile) throws IOException {
+        FileUtils.copyFile(fileToCopy, destinationFile);
     }
 }
