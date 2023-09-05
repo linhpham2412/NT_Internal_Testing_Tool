@@ -56,9 +56,18 @@ public class PageVBoxHandler {
     static boolean isQuestionDesign = false;
     static boolean isQuestionTempCheck = false;
     static Stage newStage = new Stage();
+    static Stage popUpStage = new Stage();
+    static Stage popUpTablePreviewStage = new Stage();
     static Button previewQuestionButton = new Button();
     static File questionBank = new File("");
     static File imagesFolder = new File("");
+    static TextField[][] tableObjects = new TextField[0][0];
+    static GridPane tableGridPane = new GridPane();
+    static Button addRow = new Button("Add Row");
+    static Button addCol = new Button("Add Col");
+    static ScrollPane tableScrollPane = new ScrollPane();
+    static ScrollPane tablePreviewScrollPane = new ScrollPane();
+    static Button previewTable = new Button("Preview Table");
 
 
     public static void changeStageAndScene(ActionEvent event, VBox layoutVBoxContainer, String sceneTitle) {
@@ -72,7 +81,6 @@ public class PageVBoxHandler {
     }
 
     public static void openNewStageAndScene(VBox layoutVBoxContainer, String sceneTitle) {
-//        Stage newStage = new Stage();
         Pane layout = new Pane(layoutVBoxContainer);
         Scene scene = new Scene(layout, screenWidth, screenHeight);
         newStage.setResizable(false);
@@ -80,6 +88,17 @@ public class PageVBoxHandler {
         newStage.setScene(scene);
         newStage.getIcons().add(applicationIconLocation);
         newStage.show();
+    }
+
+    public static void openNewStageAndSceneWithDefinedScreenSize(Stage openStage, VBox layoutVBoxContainer, String sceneTitle, double screenWidth, double screenHeight) {
+        Pane layout = new Pane(layoutVBoxContainer);
+        Scene scene = new Scene(layout, screenWidth, screenHeight);
+        Stage workingStage = openStage;
+        workingStage.setResizable(false);
+        workingStage.setTitle(sceneTitle);
+        workingStage.setScene(scene);
+        workingStage.getIcons().add(applicationIconLocation);
+        workingStage.show();
     }
 
     public static VBox setupHomePage() throws IOException, net.lingala.zip4j.exception.ZipException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
@@ -180,7 +199,7 @@ public class PageVBoxHandler {
         selectTestingTypeComboBox = new ComboBox();
         utilQuestionHandler.getListOfISTQBTypeReadFromData().stream()
                 .map(e -> selectTestingTypeComboBox.getItems().add(e)).collect(Collectors.toList());
-        selectTestingTypeComboBox.setStyle("-fx-font-size: 16");
+        selectTestingTypeComboBox.setStyle(fontStyle16);
         selectTestingTypeComboBox.setOnAction(event -> {
             setQuestionGroupName((String) selectTestingTypeComboBox.getValue());
             updateISTQBTypeInformation(getQuestionGroupName());
@@ -911,7 +930,7 @@ public class PageVBoxHandler {
             questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler, questionIndex);
             utilQuestionHandler.getListOfISTQBTypeReadFromData().stream()
                     .map(e -> questionDesigner.checkBoxGroup.getItems().add(e)).collect(Collectors.toList());
-            questionDesigner.checkBoxGroup.setStyle("-fx-font-size: 16");
+            questionDesigner.checkBoxGroup.setStyle(fontStyle16);
             try {
                 isReviewAnswers = true;
                 isQuestionDesign = true;
@@ -1033,6 +1052,167 @@ public class PageVBoxHandler {
                 updatePreviewPage();
             }
         }));
+
+        return resultVBox;
+    }
+
+    public static VBox setupTableDesignerForTextArea(TextArea workingTextArea) {
+        Label tableRowNo = new Label("Row");
+        Label tableColNo = new Label("Column");
+        TextField tableRowTF = new TextField();
+        TextField tableColTF = new TextField();
+        Button createTableBT = new Button("Create Table");
+        HBox commandBox = new HBox();
+        commandBox.setAlignment(Pos.CENTER);
+        commandBox.setPrefWidth(screenWidth / 1.5);
+        commandBox.getChildren().add(tableRowNo);
+        commandBox.getChildren().add(tableRowTF);
+        commandBox.getChildren().add(tableColNo);
+        commandBox.getChildren().add(tableColTF);
+        commandBox.getChildren().add(createTableBT);
+
+        String headerText = "[TableHeader]";
+        String rowText = "[TableRow]";
+        tableGridPane = new GridPane();
+        String textAreaContent = workingTextArea.getText();
+        if (textAreaContent.startsWith(headerText)) {
+            String[] tableRowData = textAreaContent.split("(\\[TableRow\\])");
+            displayTableGridPaneWithData(tableRowTF, tableColTF, tableRowData);
+        }
+
+        createTableBT.setOnAction(event -> {
+            tableScrollPane.setContent(tableGridPane);
+//            TextArea triggeredTA = (TextArea) event.getSource();
+//            String textAreaContent = workingTextArea.getText();
+//            if (!textAreaContent.isEmpty()){
+//                if (textAreaContent.startsWith(headerText)){
+//                    System.out.println("abc");
+//                }else{
+//                    displayTableGridPane(tableRowTF,tableColTF);
+//                }
+//            }else{
+            displayTableGridPane(tableRowTF, tableColTF);
+//            }
+        });
+
+        Button insertTableBT = new Button("Insert Table and Close");
+        previewTable.setStyle(cssGreenColorBGValue);
+        HBox bottomCommandBox = new HBox();
+        bottomCommandBox.setAlignment(Pos.CENTER);
+        bottomCommandBox.setBackground(grayBackGround);
+        bottomCommandBox.getChildren().add(insertTableBT);
+        bottomCommandBox.getChildren().add(previewTable);
+
+        insertTableBT.setOnAction(event -> {
+            workingTextArea.setText(getGeneratedTableContent());
+            popUpStage.close();
+            popUpTablePreviewStage.close();
+        });
+
+        popUpStage.setOnCloseRequest(event -> {
+            popUpTablePreviewStage.close();
+        });
+
+        previewTable.setOnAction(event -> {
+            openNewStageAndSceneWithDefinedScreenSize(popUpTablePreviewStage, setupTablePreviewVBox(), "Table Preview", screenWidth / 1.5, screenHeight / 1.5);
+        });
+        tableScrollPane = new ScrollPane();
+        tableScrollPane.setStyle(fontStyle16);
+        tableScrollPane.setBackground(grayBackGround);
+        tableScrollPane.setMaxWidth(screenWidth / 1.5);
+        tableScrollPane.setPrefHeight(screenHeight / 1.5);
+        tableScrollPane.setContent(tableGridPane);
+
+        VBox layoutTableDesigner = new VBox();
+        layoutTableDesigner.setBackground(grayBackGround);
+        layoutTableDesigner.setPrefHeight(screenHeight / 1.5);
+        layoutTableDesigner.getChildren().add(commandBox);
+        layoutTableDesigner.getChildren().add(tableScrollPane);
+        layoutTableDesigner.getChildren().add(bottomCommandBox);
+
+        VBox resultVBox = new VBox();
+        resultVBox.getChildren().add(layoutTableDesigner);
+
+        return resultVBox;
+    }
+
+    private static void displayTableGridPane(TextField tableRowTF, TextField tableColTF) {
+        if (!tableRowTF.getText().isEmpty() && !tableColTF.getText().isEmpty()) {
+            int rowNo = Integer.parseInt(tableRowTF.getText());
+            int colNo = Integer.parseInt(tableColTF.getText()) + 2;
+            generateTextFieldsInTableDesign(rowNo, colNo, null);
+        }
+    }
+
+    private static void generateTextFieldsInTableDesign(int rowNo, int colNo, String[][] data) {
+        int colMaxIndex = (data == null) ? colNo : colNo + 1;
+        for (int row = 0; row < rowNo; row++) {
+            for (int col = 0; col < colMaxIndex; col++) {
+                if (col == 0) {
+                    if ((row == 0)) {
+                        tableGridPane.add(new Label("[Header]"), col, row);
+                    } else {
+                        if (row == rowNo - 1) {
+                            tableGridPane.add(new Label("[TableRow]"), col, row);
+                            tableGridPane.add(addRow, col, row + 1);
+                        } else {
+                            tableGridPane.add(new Label("[TableRow]"), col, row);
+                        }
+                    }
+                } else {
+                    if (col == colMaxIndex - 1) {
+                        if (row == 0) {
+                            tableGridPane.add(addCol, col + 1, row);
+                        } else {
+                            tableGridPane.add(new Button("Delete Row"), col + 1, row);
+                        }
+                    } else {
+                        TextField cellTF = null;
+                        if (data == null) {
+                            cellTF = new TextField("row" + row + "col" + col);
+                        } else {
+                            cellTF = new TextField(data[row][col]);
+                        }
+                        cellTF.setPrefWidth(100);
+                        tableGridPane.add(cellTF, col, row);
+                    }
+                }
+            }
+        }
+    }
+
+    public static void displayTableGridPaneWithData(TextField tableRowTF, TextField tableColTF, String[] tableRowData) {
+        int maxRow = tableRowData.length;
+        int maxCol = 0;
+        String[][] tableRowSplitedData = new String[maxRow][];
+        for (int row = 0; row < maxRow; row++) {
+            tableRowSplitedData[row] = tableRowData[row].replace("[TableHeader]", "").split("#");
+            if (maxCol < tableRowSplitedData[row].length) {
+                maxCol = tableRowSplitedData[row].length;
+            }
+        }
+        tableRowTF.setText(String.valueOf(maxRow));
+        tableColTF.setText(String.valueOf(maxCol));
+        generateTextFieldsInTableDesign(maxRow, maxCol, tableRowSplitedData);
+    }
+
+    public static VBox setupTablePreviewVBox() {
+        GridPane tableContent = renderGridPaneWithDataGridTable(tableGridPane);
+        tableContent.setGridLinesVisible(true);
+
+        tablePreviewScrollPane.setStyle(fontStyle16);
+        tablePreviewScrollPane.setBackground(grayBackGround);
+        tablePreviewScrollPane.setMaxWidth(screenWidth / 1.5);
+        tablePreviewScrollPane.setPrefHeight(screenHeight / 1.5);
+        tablePreviewScrollPane.setContent(tableContent);
+
+        VBox previewTable = new VBox();
+        previewTable.setBackground(grayBackGround);
+        previewTable.setPrefHeight(screenHeight / 1.5);
+        previewTable.getChildren().add(tablePreviewScrollPane);
+
+        VBox resultVBox = new VBox();
+        resultVBox.getChildren().add(previewTable);
 
         return resultVBox;
     }

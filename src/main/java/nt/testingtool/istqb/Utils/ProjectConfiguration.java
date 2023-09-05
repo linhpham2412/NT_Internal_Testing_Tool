@@ -75,6 +75,7 @@ public class ProjectConfiguration {
     public static Color darkBlueColor = Color.valueOf("#284977");
     public static String cssGreenColorBGValue = "-fx-background-color: #21EDD2;";
     public static boolean isReviewAnswers = false;
+    public static String fontStyle16 = "-fx-font-size: 16";
 
 
     public static String getCurrentPath() throws IOException {

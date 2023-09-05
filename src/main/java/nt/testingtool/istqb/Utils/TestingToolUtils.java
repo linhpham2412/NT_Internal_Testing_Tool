@@ -21,6 +21,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -34,6 +35,7 @@ public class TestingToolUtils {
     static int currentPageIndex = 0;
     static boolean isTestingEnd = false;
     static File loadedImageFile = null;
+    static String[] generatedTableContent = new String[0];
 
     public static int getCurrentPageIndex() {
         return currentPageIndex;
@@ -228,8 +230,8 @@ public class TestingToolUtils {
                 renderQuestionGridTable(questionGridTable[i], tableRowData);
                 questionObjects[i] = questionGridTable[i];
             } else if (questionStringTitle[i].contains("<InsertingImage>")) {
-                questionStringTitle[i] = questionStringTitle[i].replace("<InsertingImage>",fileHeaderSymbol);
-                questionStringTitle[i] = questionStringTitle[i].substring(0,questionStringTitle[i].indexOf("=")).trim();
+                questionStringTitle[i] = questionStringTitle[i].replace("<InsertingImage>", fileHeaderSymbol);
+                questionStringTitle[i] = questionStringTitle[i].substring(0, questionStringTitle[i].indexOf("=")).trim();
                 questionImage[i] = new ImageView();
                 questionImage[i].setImage(new Image(questionStringTitle[i]));
                 checkImageSizeAndResizeIfLongerThanScreenSize(getObjectWidthInScrollPane(), screenHeight / 2
@@ -286,7 +288,56 @@ public class TestingToolUtils {
         imageToScale.setFitWidth(imgWidth);
     }
 
-    private static void renderQuestionGridTable(GridPane gridPane, String[] tableRowData) {
+    public static GridPane renderGridPaneWithDataGridTable(GridPane dataGridPane) {
+        int maxRow = dataGridPane.getRowCount();
+        int maxCol = dataGridPane.getColumnCount() - 1;
+        String[] tableRowData = new String[maxRow-1];
+        generatedTableContent = new String[maxRow-1];
+        String headerText = "[TableHeader]";
+        String rowText = "[TableRow]";
+        int startColData = 1;
+        int endColData = 0;
+        for (int row = 0; row < maxRow - 1; row++) {
+            StringBuilder rowDataSB = new StringBuilder();
+            if (row == maxRow - 2) {
+                endColData = startColData + maxCol - 1;
+            } else {
+                endColData = startColData + maxCol - 2;
+            }
+            List<Node> rawRowData = dataGridPane.getChildren().subList(startColData, endColData);
+            rawRowData.forEach(node -> {
+                try {
+                    TextField workingTF = (TextField) node;
+                    rowDataSB.append("#").append(workingTF.getText());
+                } catch (ClassCastException ignored) {
+                }
+            });
+            String rowResult = String.valueOf(rowDataSB).substring(1);
+            if (row == 0) {
+                tableRowData[row] = headerText + rowResult;
+                generatedTableContent[row] = headerText + rowResult;
+            } else {
+                tableRowData[row] = rowResult;
+                generatedTableContent[row] = rowText + rowResult;
+            }
+            startColData += maxCol;
+        }
+        GridPane previewGridPage = new GridPane();
+        renderQuestionGridTable(previewGridPage,tableRowData);
+        return previewGridPage;
+    }
+
+    public static String getGeneratedTableContent(){
+        previewTable.fire();
+        StringBuilder generateTableSB = new StringBuilder();
+        for (int i = 0; i < generatedTableContent.length; i++){
+            generateTableSB.append(generatedTableContent[i]);
+        }
+        return String.valueOf(generateTableSB);
+    }
+
+
+    public static void renderQuestionGridTable(GridPane gridPane, String[] tableRowData) {
         String[] rowDataStringList;
         for (int rowIndex = 0; rowIndex < tableRowData.length; rowIndex++) {
             tableRowData[rowIndex] = tableRowData[rowIndex].replace("[TableHeader]", "");

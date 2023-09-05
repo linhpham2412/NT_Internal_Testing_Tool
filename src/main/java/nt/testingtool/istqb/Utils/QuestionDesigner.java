@@ -203,7 +203,7 @@ public class QuestionDesigner {
             } else if (event.getCode() == KeyCode.DIGIT2 && event.isControlDown()) {
                 selectAndAddImageURLToTextArea((TextArea) event.getSource());
             } else if (event.getCode() == KeyCode.DIGIT3 && event.isControlDown()) {
-
+                PageVBoxHandler.openNewStageAndSceneWithDefinedScreenSize(PageVBoxHandler.popUpStage, PageVBoxHandler.setupTableDesignerForTextArea((TextArea) event.getSource()),"Table Designer", screenWidth/1.5,screenHeight/1.5);
             }
         });
 
