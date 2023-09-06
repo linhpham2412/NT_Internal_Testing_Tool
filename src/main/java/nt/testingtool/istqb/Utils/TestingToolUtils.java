@@ -291,19 +291,15 @@ public class TestingToolUtils {
     public static GridPane renderGridPaneWithDataGridTable(GridPane dataGridPane) {
         int maxRow = dataGridPane.getRowCount();
         int maxCol = dataGridPane.getColumnCount() - 1;
-        String[] tableRowData = new String[maxRow-1];
-        generatedTableContent = new String[maxRow-1];
+        String[] tableRowData = new String[maxRow];
+        generatedTableContent = new String[maxRow];
         String headerText = "[TableHeader]";
         String rowText = "[TableRow]";
         int startColData = 1;
         int endColData = 0;
-        for (int row = 0; row < maxRow - 1; row++) {
+        for (int row = 0; row < maxRow; row++) {
             StringBuilder rowDataSB = new StringBuilder();
-            if (row == maxRow - 2) {
-                endColData = startColData + maxCol - 1;
-            } else {
-                endColData = startColData + maxCol - 2;
-            }
+            endColData = startColData + maxCol;
             List<Node> rawRowData = dataGridPane.getChildren().subList(startColData, endColData);
             rawRowData.forEach(node -> {
                 try {
@@ -320,17 +316,17 @@ public class TestingToolUtils {
                 tableRowData[row] = rowResult;
                 generatedTableContent[row] = rowText + rowResult;
             }
-            startColData += maxCol;
+            startColData += maxCol + 1;
         }
         GridPane previewGridPage = new GridPane();
-        renderQuestionGridTable(previewGridPage,tableRowData);
+        renderQuestionGridTable(previewGridPage, tableRowData);
         return previewGridPage;
     }
 
-    public static String getGeneratedTableContent(){
+    public static String getGeneratedTableContent() {
         previewTable.fire();
         StringBuilder generateTableSB = new StringBuilder();
-        for (int i = 0; i < generatedTableContent.length; i++){
+        for (int i = 0; i < generatedTableContent.length; i++) {
             generateTableSB.append(generatedTableContent[i]);
         }
         return String.valueOf(generateTableSB);

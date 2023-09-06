@@ -61,13 +61,14 @@ public class PageVBoxHandler {
     static Button previewQuestionButton = new Button();
     static File questionBank = new File("");
     static File imagesFolder = new File("");
-    static TextField[][] tableObjects = new TextField[0][0];
     static GridPane tableGridPane = new GridPane();
     static Button addRow = new Button("Add Row");
     static Button addCol = new Button("Add Col");
     static ScrollPane tableScrollPane = new ScrollPane();
     static ScrollPane tablePreviewScrollPane = new ScrollPane();
     static Button previewTable = new Button("Preview Table");
+    static TextField tableRowTF = new TextField();
+    static TextField tableColTF = new TextField();
 
 
     public static void changeStageAndScene(ActionEvent event, VBox layoutVBoxContainer, String sceneTitle) {
@@ -1059,8 +1060,6 @@ public class PageVBoxHandler {
     public static VBox setupTableDesignerForTextArea(TextArea workingTextArea) {
         Label tableRowNo = new Label("Row");
         Label tableColNo = new Label("Column");
-        TextField tableRowTF = new TextField();
-        TextField tableColTF = new TextField();
         Button createTableBT = new Button("Create Table");
         HBox commandBox = new HBox();
         commandBox.setAlignment(Pos.CENTER);
@@ -1081,18 +1080,9 @@ public class PageVBoxHandler {
         }
 
         createTableBT.setOnAction(event -> {
-            tableScrollPane.setContent(tableGridPane);
-//            TextArea triggeredTA = (TextArea) event.getSource();
-//            String textAreaContent = workingTextArea.getText();
-//            if (!textAreaContent.isEmpty()){
-//                if (textAreaContent.startsWith(headerText)){
-//                    System.out.println("abc");
-//                }else{
-//                    displayTableGridPane(tableRowTF,tableColTF);
-//                }
-//            }else{
+            tableGridPane = new GridPane();
             displayTableGridPane(tableRowTF, tableColTF);
-//            }
+            tableScrollPane.setContent(tableGridPane);
         });
 
         Button insertTableBT = new Button("Insert Table and Close");
@@ -1139,43 +1129,33 @@ public class PageVBoxHandler {
     private static void displayTableGridPane(TextField tableRowTF, TextField tableColTF) {
         if (!tableRowTF.getText().isEmpty() && !tableColTF.getText().isEmpty()) {
             int rowNo = Integer.parseInt(tableRowTF.getText());
-            int colNo = Integer.parseInt(tableColTF.getText()) + 2;
+            int colNo = Integer.parseInt(tableColTF.getText()) + 1;
             generateTextFieldsInTableDesign(rowNo, colNo, null);
         }
     }
 
     private static void generateTextFieldsInTableDesign(int rowNo, int colNo, String[][] data) {
-        int colMaxIndex = (data == null) ? colNo : colNo + 1;
         for (int row = 0; row < rowNo; row++) {
-            for (int col = 0; col < colMaxIndex; col++) {
+            TextField cellTF = null;
+            for (int col = 0; col < colNo; col++) {
                 if (col == 0) {
                     if ((row == 0)) {
                         tableGridPane.add(new Label("[Header]"), col, row);
                     } else {
-                        if (row == rowNo - 1) {
-                            tableGridPane.add(new Label("[TableRow]"), col, row);
-                            tableGridPane.add(addRow, col, row + 1);
-                        } else {
-                            tableGridPane.add(new Label("[TableRow]"), col, row);
-                        }
+                        tableGridPane.add(new Label("[TableRow]"), col, row);
                     }
                 } else {
-                    if (col == colMaxIndex - 1) {
-                        if (row == 0) {
-                            tableGridPane.add(addCol, col + 1, row);
-                        } else {
-                            tableGridPane.add(new Button("Delete Row"), col + 1, row);
-                        }
+                    if (data == null) {
+                        cellTF = new TextField("row" + row + "col" + col);
                     } else {
-                        TextField cellTF = null;
-                        if (data == null) {
-                            cellTF = new TextField("row" + row + "col" + col);
-                        } else {
+                        try {
                             cellTF = new TextField(data[row][col]);
+                        } catch (ArrayIndexOutOfBoundsException e) {
+                            cellTF = new TextField("");
                         }
-                        cellTF.setPrefWidth(100);
-                        tableGridPane.add(cellTF, col, row);
                     }
+                    cellTF.setPrefWidth(100);
+                    tableGridPane.add(cellTF, col, row);
                 }
             }
         }
@@ -1186,13 +1166,18 @@ public class PageVBoxHandler {
         int maxCol = 0;
         String[][] tableRowSplitedData = new String[maxRow][];
         for (int row = 0; row < maxRow; row++) {
-            tableRowSplitedData[row] = tableRowData[row].replace("[TableHeader]", "").split("#");
+            if (row == 0) {
+                tableRowSplitedData[row] = tableRowData[row].replace("[TableHeader]", "#").split("#");
+            } else {
+                tableRowData[row] = "#" + tableRowData[row];
+                tableRowSplitedData[row] = tableRowData[row].split("#");
+            }
             if (maxCol < tableRowSplitedData[row].length) {
                 maxCol = tableRowSplitedData[row].length;
             }
         }
         tableRowTF.setText(String.valueOf(maxRow));
-        tableColTF.setText(String.valueOf(maxCol));
+        tableColTF.setText(String.valueOf(maxCol - 1));
         generateTextFieldsInTableDesign(maxRow, maxCol, tableRowSplitedData);
     }
 

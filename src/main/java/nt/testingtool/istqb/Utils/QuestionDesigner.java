@@ -1,5 +1,6 @@
 package nt.testingtool.istqb.Utils;
 
+import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -67,7 +68,6 @@ public class QuestionDesigner {
     ComboBox checkBoxGroup = new ComboBox();
     Button saveChangesQuestion = new Button("Write Changes to File");
     Button applyGroupButton = new Button("<<");
-//    Button insertImage = new Button("Add Image");
 
     public VBox generateElements() {
         Pane questionDesignerPaneHeader = new Pane();
@@ -107,14 +107,7 @@ public class QuestionDesigner {
         leftCommandPane.setPrefWidth(screenWidth / 2);
         Label commandText = new Label("Commands: Ctrl-1[Enter] | Ctrl-2[Insert Image] | Ctrl-3[Add/Edit Table]");
         commandText.setFont(toolFont);
-//        insertImage.setFont(toolFont);
-//        HBox.setMargin(insertImage,new Insets(0,5,5,20));
-//        Button addOrEditTable = new Button("Add/Edit Table");
-//        addOrEditTable.setFont(toolFont);
-//        HBox.setMargin(addOrEditTable,new Insets(0,5,5,5));
         leftCommandPane.getChildren().add(commandText);
-//        leftCommandPane.getChildren().add(insertImage);
-//        leftCommandPane.getChildren().add(addOrEditTable);
 
         HBox rightCommandPane = new HBox();
         rightCommandPane.setPrefWidth(screenWidth / 2);
@@ -169,12 +162,9 @@ public class QuestionDesigner {
         HBox titleGroupHBox = new HBox();
         Label titleGroupLabel = new Label("Group:");
         titleGroupLabel.setFont(toolFont);
-//        TextField selectedGroupName = new TextField();
         selectedGroupName.setFont(toolFont);
         selectedGroupName.setPrefSize(screenWidth / 2, 50);
-//        ComboBox checkBoxGroup = new ComboBox();
         checkBoxGroup.setPrefSize(screenWidth / 3, 50);
-//        Button applyGroupButton = new Button("<<");
         applyGroupButton.setFont(toolFont);
         HBox.setMargin(applyGroupButton, new Insets(0, 10, 0, 10));
         titleGroupHBox.getChildren().add(titleGroupLabel);
@@ -190,27 +180,15 @@ public class QuestionDesigner {
         HBox titleHBox1 = new HBox();
         Label titleLabel1 = new Label("Title 01:");
         titleLabel1.setFont(toolFont);
-//        TextArea textArea1 = new TextArea();
         textArea1.setFont(toolFont);
         textArea1.setWrapText(true);
         textArea1.setPrefSize(screenWidth / 1.1, screenHeight / 4);
         titleHBox1.getChildren().add(titleLabel1);
         titleHBox1.getChildren().add(textArea1);
 
-        textArea1.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.DIGIT1 && event.isControlDown()) {
-                addEnterSymbolToTextArea((TextArea) event.getSource());
-            } else if (event.getCode() == KeyCode.DIGIT2 && event.isControlDown()) {
-                selectAndAddImageURLToTextArea((TextArea) event.getSource());
-            } else if (event.getCode() == KeyCode.DIGIT3 && event.isControlDown()) {
-                PageVBoxHandler.openNewStageAndSceneWithDefinedScreenSize(PageVBoxHandler.popUpStage, PageVBoxHandler.setupTableDesignerForTextArea((TextArea) event.getSource()),"Table Designer", screenWidth/1.5,screenHeight/1.5);
-            }
-        });
-
         HBox titleHBox2 = new HBox();
         Label titleLabel2 = new Label("Title 02:");
         titleLabel2.setFont(toolFont);
-//        TextArea textArea2 = new TextArea();
         textArea2.setFont(toolFont);
         textArea2.setWrapText(true);
         textArea2.setPrefSize(screenWidth / 1.1, screenHeight / 4);
@@ -220,7 +198,6 @@ public class QuestionDesigner {
         HBox titleHBox3 = new HBox();
         Label titleLabel3 = new Label("Title 03:");
         titleLabel3.setFont(toolFont);
-//        TextArea textArea3 = new TextArea();
         textArea3.setFont(toolFont);
         textArea3.setWrapText(true);
         textArea3.setPrefSize(screenWidth / 1.1, screenHeight / 4);
@@ -230,7 +207,6 @@ public class QuestionDesigner {
         HBox titleHBox4 = new HBox();
         Label titleLabel4 = new Label("Title 04:");
         titleLabel4.setFont(toolFont);
-//        TextArea textArea4 = new TextArea();
         textArea4.setFont(toolFont);
         textArea4.setWrapText(true);
         textArea4.setPrefSize(screenWidth / 1.1, screenHeight / 4);
@@ -240,7 +216,6 @@ public class QuestionDesigner {
         HBox titleHBox5 = new HBox();
         Label titleLabel5 = new Label("Title 05:");
         titleLabel5.setFont(toolFont);
-//        TextArea textArea5 = new TextArea();
         textArea5.setFont(toolFont);
         textArea5.setWrapText(true);
         textArea5.setPrefSize(screenWidth / 1.1, screenHeight / 4);
@@ -250,7 +225,6 @@ public class QuestionDesigner {
         HBox titleHBox6 = new HBox();
         Label titleLabel6 = new Label("Title 06:");
         titleLabel6.setFont(toolFont);
-//        TextArea textArea6 = new TextArea();
         textArea6.setFont(toolFont);
         textArea6.setWrapText(true);
         textArea6.setPrefSize(screenWidth / 1.1, screenHeight / 4);
@@ -260,7 +234,6 @@ public class QuestionDesigner {
         HBox titleHBox7 = new HBox();
         Label titleLabel7 = new Label("Title 07:");
         titleLabel7.setFont(toolFont);
-//        TextArea textArea7 = new TextArea();
         textArea7.setFont(toolFont);
         textArea7.setWrapText(true);
         textArea7.setPrefSize(screenWidth / 1.1, screenHeight / 4);
@@ -270,7 +243,6 @@ public class QuestionDesigner {
         HBox titleHBox8 = new HBox();
         Label titleLabel8 = new Label("Title 08:");
         titleLabel8.setFont(toolFont);
-//        TextArea textArea8 = new TextArea();
         textArea8.setFont(toolFont);
         textArea8.setWrapText(true);
         textArea8.setPrefSize(screenWidth / 1.1, screenHeight / 4);
@@ -280,7 +252,6 @@ public class QuestionDesigner {
         HBox titleHBox9 = new HBox();
         Label titleLabel9 = new Label("Title 09:");
         titleLabel9.setFont(toolFont);
-//        TextArea textArea9 = new TextArea();
         textArea9.setFont(toolFont);
         textArea9.setWrapText(true);
         textArea9.setPrefSize(screenWidth / 1.1, screenHeight / 4);
@@ -290,17 +261,26 @@ public class QuestionDesigner {
         HBox titleHBox10 = new HBox();
         Label titleLabel10 = new Label("Title 10:");
         titleLabel10.setFont(toolFont);
-//        TextArea textArea10 = new TextArea();
         textArea10.setFont(toolFont);
         textArea10.setWrapText(true);
         textArea10.setPrefSize(screenWidth / 1.1, screenHeight / 4);
         titleHBox10.getChildren().add(titleLabel10);
         titleHBox10.getChildren().add(textArea10);
 
+        textArea1.setOnKeyPressed(this::triggerKeyEventForTextArea);
+        textArea2.setOnKeyPressed(this::triggerKeyEventForTextArea);
+        textArea3.setOnKeyPressed(this::triggerKeyEventForTextArea);
+        textArea4.setOnKeyPressed(this::triggerKeyEventForTextArea);
+        textArea5.setOnKeyPressed(this::triggerKeyEventForTextArea);
+        textArea6.setOnKeyPressed(this::triggerKeyEventForTextArea);
+        textArea7.setOnKeyPressed(this::triggerKeyEventForTextArea);
+        textArea8.setOnKeyPressed(this::triggerKeyEventForTextArea);
+        textArea9.setOnKeyPressed(this::triggerKeyEventForTextArea);
+        textArea10.setOnKeyPressed(this::triggerKeyEventForTextArea);
+
         HBox answerBox = new HBox();
         Label answerLabel = new Label("Answer area:");
         answerLabel.setFont(toolFont);
-//        CheckBox isMultiAnswersCheckbox = new CheckBox("Is Multiple Answers");
         isMultiAnswersCheckbox.setFont(toolFont);
 
         answerBox.getChildren().add(answerLabel);
@@ -309,9 +289,7 @@ public class QuestionDesigner {
         HBox answerHBox1 = new HBox();
         Label answerLabel1 = new Label("Answer 01:");
         answerLabel1.setFont(toolFont);
-//        CheckBox isAnswer1Correct = new CheckBox("Is Correct");
         isAnswer1Correct.setFont(toolFont);
-//        TextArea textAreaAnswer1 = new TextArea();
         textAreaAnswer1.setFont(toolFont);
         textAreaAnswer1.setWrapText(true);
         textAreaAnswer1.setPrefSize(screenWidth / 1.5, screenHeight / 4);
@@ -322,9 +300,7 @@ public class QuestionDesigner {
         HBox answerHBox2 = new HBox();
         Label answerLabel2 = new Label("Answer 02:");
         answerLabel2.setFont(toolFont);
-//        CheckBox isAnswer2Correct = new CheckBox("Is Correct");
         isAnswer2Correct.setFont(toolFont);
-//        TextArea textAreaAnswer2 = new TextArea();
         textAreaAnswer2.setFont(toolFont);
         textAreaAnswer2.setWrapText(true);
         textAreaAnswer2.setPrefSize(screenWidth / 1.5, screenHeight / 4);
@@ -335,9 +311,7 @@ public class QuestionDesigner {
         HBox answerHBox3 = new HBox();
         Label answerLabel3 = new Label("Answer 03:");
         answerLabel3.setFont(toolFont);
-//        CheckBox isAnswer3Correct = new CheckBox("Is Correct");
         isAnswer3Correct.setFont(toolFont);
-//        TextArea textAreaAnswer3 = new TextArea();
         textAreaAnswer3.setFont(toolFont);
         textAreaAnswer3.setWrapText(true);
         textAreaAnswer3.setPrefSize(screenWidth / 1.5, screenHeight / 4);
@@ -348,9 +322,7 @@ public class QuestionDesigner {
         HBox answerHBox4 = new HBox();
         Label answerLabel4 = new Label("Answer 04:");
         answerLabel4.setFont(toolFont);
-//        CheckBox isAnswer4Correct = new CheckBox("Is Correct");
         isAnswer4Correct.setFont(toolFont);
-//        TextArea textAreaAnswer4 = new TextArea();
         textAreaAnswer4.setFont(toolFont);
         textAreaAnswer4.setWrapText(true);
         textAreaAnswer4.setPrefSize(screenWidth / 1.5, screenHeight / 4);
@@ -361,9 +333,7 @@ public class QuestionDesigner {
         HBox answerHBox5 = new HBox();
         Label answerLabel5 = new Label("Answer 05:");
         answerLabel5.setFont(toolFont);
-//        CheckBox isAnswer5Correct = new CheckBox("Is Correct");
         isAnswer5Correct.setFont(toolFont);
-//        TextArea textAreaAnswer5 = new TextArea();
         textAreaAnswer5.setFont(toolFont);
         textAreaAnswer5.setWrapText(true);
         textAreaAnswer5.setPrefSize(screenWidth / 1.5, screenHeight / 4);
@@ -374,9 +344,7 @@ public class QuestionDesigner {
         HBox answerHBox6 = new HBox();
         Label answerLabel6 = new Label("Answer 06:");
         answerLabel6.setFont(toolFont);
-//        CheckBox isAnswer6Correct = new CheckBox("Is Correct");
         isAnswer6Correct.setFont(toolFont);
-//        TextArea textAreaAnswer6 = new TextArea();
         textAreaAnswer6.setFont(toolFont);
         textAreaAnswer6.setWrapText(true);
         textAreaAnswer6.setPrefSize(screenWidth / 1.5, screenHeight / 4);
@@ -387,9 +355,7 @@ public class QuestionDesigner {
         HBox answerHBox7 = new HBox();
         Label answerLabel7 = new Label("Answer 07:");
         answerLabel7.setFont(toolFont);
-//        CheckBox isAnswer7Correct = new CheckBox("Is Correct");
         isAnswer7Correct.setFont(toolFont);
-//        TextArea textAreaAnswer7 = new TextArea();
         textAreaAnswer7.setFont(toolFont);
         textAreaAnswer7.setWrapText(true);
         textAreaAnswer7.setPrefSize(screenWidth / 1.5, screenHeight / 4);
@@ -400,9 +366,7 @@ public class QuestionDesigner {
         HBox answerHBox8 = new HBox();
         Label answerLabel8 = new Label("Answer 08:");
         answerLabel8.setFont(toolFont);
-//        CheckBox isAnswer8Correct = new CheckBox("Is Correct");
         isAnswer8Correct.setFont(toolFont);
-//        TextArea textAreaAnswer8 = new TextArea();
         textAreaAnswer8.setFont(toolFont);
         textAreaAnswer8.setWrapText(true);
         textAreaAnswer8.setPrefSize(screenWidth / 1.5, screenHeight / 4);
@@ -413,9 +377,7 @@ public class QuestionDesigner {
         HBox answerHBox9 = new HBox();
         Label answerLabel9 = new Label("Answer 09:");
         answerLabel9.setFont(toolFont);
-//        CheckBox isAnswer9Correct = new CheckBox("Is Correct");
         isAnswer9Correct.setFont(toolFont);
-//        TextArea textAreaAnswer9 = new TextArea();
         textAreaAnswer9.setFont(toolFont);
         textAreaAnswer9.setWrapText(true);
         textAreaAnswer9.setPrefSize(screenWidth / 1.5, screenHeight / 4);
@@ -426,9 +388,7 @@ public class QuestionDesigner {
         HBox answerHBox10 = new HBox();
         Label answerLabel10 = new Label("Answer 10:");
         answerLabel10.setFont(toolFont);
-//        CheckBox isAnswer10Correct = new CheckBox("Is Correct");
         isAnswer10Correct.setFont(toolFont);
-//        TextArea textAreaAnswer10 = new TextArea();
         textAreaAnswer10.setFont(toolFont);
         textAreaAnswer10.setWrapText(true);
         textAreaAnswer10.setPrefSize(screenWidth / 1.5, screenHeight / 4);
@@ -493,6 +453,16 @@ public class QuestionDesigner {
         resultVBox.getChildren().add(designPane);
 
         return resultVBox;
+    }
+
+    private void triggerKeyEventForTextArea(javafx.scene.input.KeyEvent event){
+        if (event.getCode() == KeyCode.DIGIT1 && event.isControlDown()) {
+            addEnterSymbolToTextArea((TextArea) event.getSource());
+        } else if (event.getCode() == KeyCode.DIGIT2 && event.isControlDown()) {
+            selectAndAddImageURLToTextArea((TextArea) event.getSource());
+        } else if (event.getCode() == KeyCode.DIGIT3 && event.isControlDown()) {
+            PageVBoxHandler.openNewStageAndSceneWithDefinedScreenSize(PageVBoxHandler.popUpStage, PageVBoxHandler.setupTableDesignerForTextArea((TextArea) event.getSource()),"Table Designer", screenWidth/1.5,screenHeight/1.5);
+        }
     }
 
     private void selectAndAddImageURLToTextArea(TextArea source) {
