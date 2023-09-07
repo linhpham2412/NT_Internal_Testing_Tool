@@ -16,6 +16,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -31,6 +32,37 @@ public class QuestionHandler {
     public static String imageFolderAbsolutePath;
     public static String[] questionStringAnswer;
     public static boolean[] questionBooleanIsAnswerCorrect;
+    public static String isMultiHeaderText = "";
+    public static String isAnswer1CorrectHeaderText = "";
+    public static String isAnswer2CorrectHeaderText = "";
+    public static String isAnswer3CorrectHeaderText = "";
+    public static String isAnswer4CorrectHeaderText = "";
+    public static String isAnswer5CorrectHeaderText = "";
+    public static String isAnswer6CorrectHeaderText = "";
+    public static String isAnswer7CorrectHeaderText = "";
+    public static String isAnswer8CorrectHeaderText = "";
+    public static String isAnswer9CorrectHeaderText = "";
+    public static String isAnswer10CorrectHeaderText = "";
+
+    public static QuestionDataModel getTemporaryChangeQuestion() {
+        return temporaryChangeQuestion;
+    }
+
+    public static void setTemporaryChangeQuestion(QuestionDataModel temporaryChangeQuestion) {
+        QuestionHandler.temporaryChangeQuestion = temporaryChangeQuestion;
+    }
+
+    public static QuestionDataModel temporaryChangeQuestion;
+
+    public static int getCurrentQuestionPreviewIndex() {
+        return currentQuestionPreviewIndex;
+    }
+
+    public static void setCurrentQuestionPreviewIndex(int currentQuestionPreviewIndex) {
+        QuestionHandler.currentQuestionPreviewIndex = currentQuestionPreviewIndex;
+    }
+
+    public static int currentQuestionPreviewIndex = 0;
     public static int[][] selectedAnswer;
     public static int[][] correctAnswer;
     //Question Field items
@@ -47,6 +79,7 @@ public class QuestionHandler {
     public File imagesFolder;
     public boolean isFirstLoad = true;
     List<String> listOfISTQBTypeReadFromData = new ArrayList<>();
+    public static List<String> fullListOfISTQBTypeReadFromData = new ArrayList<>();
     private ZipFile zipFile;
     private QuestionBankDataModel questionBankDataModels;
     private QuestionDataModel[] questionDataModels;
@@ -99,6 +132,10 @@ public class QuestionHandler {
 
     public static void initCorrectAnswer() {
         correctAnswer = new int[getNumberOfQuestionsPerQuestionBank()][getMaxNumberOfAnswerElementsInQuestionBank()];
+    }
+
+    public QuestionDataModel[] getquestionDataModels() {
+        return questionDataModels;
     }
 
     public static String checkUnAnsweredQuestions() {
@@ -162,6 +199,62 @@ public class QuestionHandler {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    public List<String> getFullListOfISTQBTypeReadFromData() {
+        return fullListOfISTQBTypeReadFromData;
+    }
+
+    public void readAndMapQuestionDataFromFileToDataObject(File readFile) {
+        File dataTextFileName = readFile;
+        questionDataModels = new QuestionDataModel[1];
+        int numberOfQuestionBanksInGroup = 0;
+        try (FileReader fr = new FileReader(dataTextFileName);
+             BufferedReader reader = new BufferedReader(fr)) {
+            readData = reader.readLine();
+            do {
+                try {
+                    String[] readList = Arrays.stream(readData.split("\\|"))
+                            .map(e -> e.trim()).collect(Collectors.toList()).toArray(new String[0]);
+                    if (readList[1].equals("Group")) {
+                        isMultiHeaderText = readList[12];
+                        isAnswer1CorrectHeaderText = readList[13];
+                        isAnswer2CorrectHeaderText = readList[15];
+                        isAnswer3CorrectHeaderText = readList[17];
+                        isAnswer4CorrectHeaderText = readList[19];
+                        isAnswer5CorrectHeaderText = readList[21];
+                        isAnswer6CorrectHeaderText = readList[23];
+                        isAnswer7CorrectHeaderText = readList[25];
+                        isAnswer8CorrectHeaderText = readList[27];
+                        isAnswer9CorrectHeaderText = readList[29];
+                        isAnswer10CorrectHeaderText = readList[31];
+                    }
+                    listOfISTQBTypeReadFromData.add(readList[1]);
+                    questionDataModels[numberOfQuestionBanksInGroup] = readAndAddQuestionsToQuestionBank(readList);
+                    numberOfQuestionBanksInGroup++;
+                    questionDataModels = Arrays.copyOf(questionDataModels, numberOfQuestionBanksInGroup + 1);
+                } catch (Exception e) {
+                }
+            }
+            while ((readData = reader.readLine()) != null);
+            fullListOfISTQBTypeReadFromData = listOfISTQBTypeReadFromData;
+            listOfISTQBTypeReadFromData = listOfISTQBTypeReadFromData.stream().distinct().collect(Collectors.toList());
+            questionDataModels = Arrays.copyOf(questionDataModels, questionDataModels.length - 1);
+            questionBankDataModels = new QuestionBankDataModel();
+            questionBankDataModels.setQuestionDataModels(questionDataModels);
+            //close reader after read
+            reader.close();
+            fr.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void addNewQuestionToModel(){
+        int lastQuestionIndex = questionDataModels.length;
+        questionDataModels = Arrays.copyOf(questionDataModels,lastQuestionIndex+1);
+        fullListOfISTQBTypeReadFromData.add("");
+        questionDataModels[lastQuestionIndex] = new QuestionDataModel();
     }
 
     private File switchDataZipFileName(String zipFileName) throws IOException, ZipException {
@@ -359,13 +452,14 @@ public class QuestionHandler {
 
     private String checkNewLineSymbolInDataToReplaceWithLineSeparator(String columnData) {
         if (columnData.contains("\\n")) {
-            String[] splitedStringsBasedOnNewLine = columnData.split("\\\\n");
-            columnData = "";
-            for (String line : splitedStringsBasedOnNewLine) {
-                columnData += line + System.lineSeparator();
-            }
+            columnData = convertAllEnterSymbolInTextToSpecialCharacter(columnData);
+            columnData = QuestionDesigner.convertEnterCharacterToReview(columnData);
         }
         return columnData;
+    }
+
+    private String convertAllEnterSymbolInTextToSpecialCharacter(String textToConvert){
+        return textToConvert.replaceAll("\\\\n","¶");
     }
 
     private boolean convertDataToBoolean(String dataToConvert) {
@@ -396,5 +490,9 @@ public class QuestionHandler {
 
     private int convertBooleanToOneOrZero(boolean booleanToConvert) {
         return (booleanToConvert) ? 1 : 0;
+    }
+
+    public String convertBooleanToSaveFormat(boolean booleanToConvert) {
+        return (booleanToConvert) ? "Y" : "";
     }
 }

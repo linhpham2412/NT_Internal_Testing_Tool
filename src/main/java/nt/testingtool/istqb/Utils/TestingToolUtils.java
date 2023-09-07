@@ -21,6 +21,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -34,6 +35,7 @@ public class TestingToolUtils {
     static int currentPageIndex = 0;
     static boolean isTestingEnd = false;
     static File loadedImageFile = null;
+    static String[] generatedTableContent = new String[0];
 
     public static int getCurrentPageIndex() {
         return currentPageIndex;
@@ -78,7 +80,13 @@ public class TestingToolUtils {
         //map question data to local variables
         mapValueFromTestingQuestionToLocalVariablesByPageIndex(pageIndex);
         //Add more question components inside vbox
-        Label questionNumber = new Label("Question " + (pageIndex + 1) + ":");
+        Label questionNumber = new Label("");
+        if (isQuestionDesign) {
+            questionNumber.setText("Question " + getCurrentQuestionPreviewIndex() + ":");
+        } else {
+            questionNumber.setText("Question " + (pageIndex + 1) + ":");
+        }
+//        questionNumber = new Label("Question " + (pageIndex + 1) + ":");
         assignQuestionDataFromClassToTitleLabelOrImage();
         String kindOfChoice = (isQuestionMultipleChoices()) ? "[Multi Choice]" : "[Single choice]";
         Label answerLabel = new Label("Answer: " + kindOfChoice);
@@ -161,7 +169,14 @@ public class TestingToolUtils {
 
 
     private static void mapValueFromTestingQuestionToLocalVariablesByPageIndex(int questionIndex) {
-        QuestionDataModel testingQuestion = testingQuestions[questionIndex];
+        QuestionDataModel testingQuestion = new QuestionDataModel();
+        if (isQuestionDesign && !isQuestionTempCheck) {
+            testingQuestion = utilQuestionHandler.getquestionDataModels()[PageVBoxHandler.questionIndex];
+        } else if (isQuestionTempCheck) {
+            testingQuestion = getTemporaryChangeQuestion();
+        } else {
+            testingQuestion = testingQuestions[questionIndex];
+        }
         questionStringTitle[0] = testingQuestion.getQuestionTitle1();
         questionStringTitle[1] = testingQuestion.getQuestionTitle2();
         questionStringTitle[2] = testingQuestion.getQuestionTitle3();
@@ -196,12 +211,13 @@ public class TestingToolUtils {
     }
 
     private static void assignQuestionDataFromClassToTitleLabelOrImage() {
+        String fileHeaderSymbol = "file:///";
         for (int i = 0; i < 10; i++) {
-            if (Objects.equals(questionStringTitle[i], "")) {
+            if (Objects.equals(questionStringTitle[i], "") || questionStringTitle[i] == null) {
                 break;
             } else if (questionStringTitle[i].contains("Images\\")) {
                 questionStringTitle[i] = questionStringTitle[i]
-                        .replace("Images\\", "file:///" + imageFolderAbsolutePath);
+                        .replace("Images\\", fileHeaderSymbol + imageFolderAbsolutePath);
                 questionImage[i] = new ImageView();
                 questionImage[i].setImage(new Image(questionStringTitle[i]));
                 checkImageSizeAndResizeIfLongerThanScreenSize(getObjectWidthInScrollPane(), screenHeight / 2
@@ -213,6 +229,14 @@ public class TestingToolUtils {
                 questionGridTable[i].setGridLinesVisible(true);
                 renderQuestionGridTable(questionGridTable[i], tableRowData);
                 questionObjects[i] = questionGridTable[i];
+            } else if (questionStringTitle[i].contains("<InsertingImage>")) {
+                questionStringTitle[i] = questionStringTitle[i].replace("<InsertingImage>", fileHeaderSymbol);
+                questionStringTitle[i] = questionStringTitle[i].substring(0, questionStringTitle[i].indexOf("=")).trim();
+                questionImage[i] = new ImageView();
+                questionImage[i].setImage(new Image(questionStringTitle[i]));
+                checkImageSizeAndResizeIfLongerThanScreenSize(getObjectWidthInScrollPane(), screenHeight / 2
+                        , questionImage[i]);
+                questionObjects[i] = questionImage[i];
             } else {
                 questionTitle[i] = new Label(questionStringTitle[i]);
                 questionTitle[i].setPrefWidth(getObjectWidthInScrollPane());
@@ -264,7 +288,52 @@ public class TestingToolUtils {
         imageToScale.setFitWidth(imgWidth);
     }
 
-    private static void renderQuestionGridTable(GridPane gridPane, String[] tableRowData) {
+    public static GridPane renderGridPaneWithDataGridTable(GridPane dataGridPane) {
+        int maxRow = dataGridPane.getRowCount();
+        int maxCol = dataGridPane.getColumnCount() - 1;
+        String[] tableRowData = new String[maxRow];
+        generatedTableContent = new String[maxRow];
+        String headerText = "[TableHeader]";
+        String rowText = "[TableRow]";
+        int startColData = 1;
+        int endColData = 0;
+        for (int row = 0; row < maxRow; row++) {
+            StringBuilder rowDataSB = new StringBuilder();
+            endColData = startColData + maxCol;
+            List<Node> rawRowData = dataGridPane.getChildren().subList(startColData, endColData);
+            rawRowData.forEach(node -> {
+                try {
+                    TextField workingTF = (TextField) node;
+                    rowDataSB.append("#").append(workingTF.getText());
+                } catch (ClassCastException ignored) {
+                }
+            });
+            String rowResult = String.valueOf(rowDataSB).substring(1);
+            if (row == 0) {
+                tableRowData[row] = headerText + rowResult;
+                generatedTableContent[row] = headerText + rowResult;
+            } else {
+                tableRowData[row] = rowResult;
+                generatedTableContent[row] = rowText + rowResult;
+            }
+            startColData += maxCol + 1;
+        }
+        GridPane previewGridPage = new GridPane();
+        renderQuestionGridTable(previewGridPage, tableRowData);
+        return previewGridPage;
+    }
+
+    public static String getGeneratedTableContent() {
+        previewTable.fire();
+        StringBuilder generateTableSB = new StringBuilder();
+        for (int i = 0; i < generatedTableContent.length; i++) {
+            generateTableSB.append(generatedTableContent[i]);
+        }
+        return String.valueOf(generateTableSB);
+    }
+
+
+    public static void renderQuestionGridTable(GridPane gridPane, String[] tableRowData) {
         String[] rowDataStringList;
         for (int rowIndex = 0; rowIndex < tableRowData.length; rowIndex++) {
             tableRowData[rowIndex] = tableRowData[rowIndex].replace("[TableHeader]", "");
@@ -297,7 +366,7 @@ public class TestingToolUtils {
     public static void assignAnswersDataFromClassToCheckBoxOrRadioButton(int pageIndex) {
         int answerIndex = 0;
         for (int i = 0; i < 5; i++) {
-            if (Objects.equals(questionStringAnswer[answerIndex], "")) {
+            if ((Objects.equals(questionStringAnswer[answerIndex], "")) || questionStringAnswer[answerIndex] == null) {
                 break;
             } else if (isQuestionMultipleChoices) {
                 answerHBoxContainers[i] = new HBox();
@@ -337,13 +406,21 @@ public class TestingToolUtils {
             answerCheckBoxes[elementIndex].setVisible(false);
         }
         if (answerCheckBoxes[elementIndex].isVisible()) {
-            if (getSelectedAnswer()[pageIndex][elementIndex] == 1) {
-                answerCheckBoxes[elementIndex].setSelected(true);
+            if (!isQuestionDesign) {
+                if (getSelectedAnswer()[pageIndex][elementIndex] == 1) {
+                    answerCheckBoxes[elementIndex].setSelected(true);
+                }
             }
             //update green background if it is correct answer in review
-            if (isReviewAnswers){
-                if (getCorrectAnswer()[pageIndex][elementIndex] == 1){
-                    answerCheckBoxes[elementIndex].setStyle(cssGreenColorBGValue);
+            if (isReviewAnswers) {
+                if (isQuestionDesign) {
+                    if (questionBooleanIsAnswerCorrect[elementIndex]) {
+                        answerCheckBoxes[elementIndex].setStyle(cssGreenColorBGValue);
+                    }
+                } else {
+                    if (getCorrectAnswer()[pageIndex][elementIndex] == 1) {
+                        answerCheckBoxes[elementIndex].setStyle(cssGreenColorBGValue);
+                    }
                 }
             }
             answerCheckBoxes[elementIndex].setOnAction(event -> {
@@ -368,13 +445,21 @@ public class TestingToolUtils {
             answerRadioButtons[elementIndex].setVisible(false);
         }
         if (answerRadioButtons[elementIndex].isVisible()) {
-            if (getSelectedAnswer()[pageIndex][elementIndex] == 1) {
-                answerRadioButtons[elementIndex].setSelected(true);
+            if (!isQuestionDesign) {
+                if (getSelectedAnswer()[pageIndex][elementIndex] == 1) {
+                    answerRadioButtons[elementIndex].setSelected(true);
+                }
             }
             //update green background if it is correct answer in review
-            if (isReviewAnswers){
-                if (getCorrectAnswer()[pageIndex][elementIndex] == 1){
-                    answerRadioButtons[elementIndex].setStyle(cssGreenColorBGValue);
+            if (isReviewAnswers) {
+                if (isQuestionDesign) {
+                    if (questionBooleanIsAnswerCorrect[elementIndex]) {
+                        answerRadioButtons[elementIndex].setStyle(cssGreenColorBGValue);
+                    }
+                } else {
+                    if (getCorrectAnswer()[pageIndex][elementIndex] == 1) {
+                        answerRadioButtons[elementIndex].setStyle(cssGreenColorBGValue);
+                    }
                 }
             }
             answerRadioButtons[elementIndex].setOnAction(event -> {

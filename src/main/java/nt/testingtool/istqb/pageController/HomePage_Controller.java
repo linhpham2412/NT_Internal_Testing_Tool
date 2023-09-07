@@ -32,18 +32,23 @@ public class HomePage_Controller implements Initializable {
         questionHandler = new QuestionHandler();
         try {
             //Access Home Page
-            examPageVBox = setupHomePage();
+//            examPageVBox = setupHomePage();
             //Access Manage Page
 //            examPageVBox = setupManagePage();
+            //Access Question Designer Page
+            examPageVBox = setupQuestionDesignerPage();
         }
-        catch (IOException | ZipException | InvalidAlgorithmParameterException | NoSuchPaddingException |
-                 IllegalBlockSizeException | NoSuchAlgorithmException | InvalidKeySpecException | BadPaddingException |
-                 InvalidKeyException e) {
-            throw new RuntimeException(e);
-        }
+//        catch (IOException | ZipException | InvalidAlgorithmParameterException | NoSuchPaddingException |
+//                 IllegalBlockSizeException | NoSuchAlgorithmException | InvalidKeySpecException | BadPaddingException |
+//                 InvalidKeyException e) {
+//            throw new RuntimeException(e);
+//        }
 //        catch (IOException e) {
 //            throw new RuntimeException(e);
 //        }
+        catch (Exception e){
+            throw new RuntimeException(e);
+        }
         examPagePane.getChildren().add(examPageVBox);
     }
 }

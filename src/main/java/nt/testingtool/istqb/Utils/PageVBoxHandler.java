@@ -13,12 +13,14 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import net.lingala.zip4j.exception.ZipException;
+import nt.testingtool.istqb.datamodel.QuestionDataModel;
 import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.ImageWriteException;
 
@@ -37,6 +39,7 @@ import static nt.testingtool.istqb.Utils.EncryptDecryptBased64.decryptedBase64Te
 import static nt.testingtool.istqb.Utils.EncryptDecryptBased64.encryptTextBase64WithSecretKey;
 import static nt.testingtool.istqb.Utils.ImageCaptureHandler.*;
 import static nt.testingtool.istqb.Utils.ProjectConfiguration.*;
+import static nt.testingtool.istqb.Utils.QuestionDesigner.*;
 import static nt.testingtool.istqb.Utils.QuestionHandler.*;
 import static nt.testingtool.istqb.Utils.TestingToolUtils.*;
 import static org.apache.commons.io.FileUtils.cleanDirectory;
@@ -48,6 +51,25 @@ public class PageVBoxHandler {
     public static String testUserName = "";
     static Stage mainStage;
     static Pagination pagination;
+    static int questionIndex = 0;
+    static int maxQuestionIndex = 0;
+    static boolean isQuestionDesign = false;
+    static boolean isQuestionTempCheck = false;
+    static Stage newStage = new Stage();
+    static Stage popUpStage = new Stage();
+    static Stage popUpTablePreviewStage = new Stage();
+    static Button previewQuestionButton = new Button();
+    static File questionBank = new File("");
+    static File imagesFolder = new File("");
+    static GridPane tableGridPane = new GridPane();
+    static Button addRow = new Button("Add Row");
+    static Button addCol = new Button("Add Col");
+    static ScrollPane tableScrollPane = new ScrollPane();
+    static ScrollPane tablePreviewScrollPane = new ScrollPane();
+    static Button previewTable = new Button("Preview Table");
+    static TextField tableRowTF = new TextField();
+    static TextField tableColTF = new TextField();
+
 
     public static void changeStageAndScene(ActionEvent event, VBox layoutVBoxContainer, String sceneTitle) {
         mainStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
@@ -60,7 +82,6 @@ public class PageVBoxHandler {
     }
 
     public static void openNewStageAndScene(VBox layoutVBoxContainer, String sceneTitle) {
-        Stage newStage = new Stage();
         Pane layout = new Pane(layoutVBoxContainer);
         Scene scene = new Scene(layout, screenWidth, screenHeight);
         newStage.setResizable(false);
@@ -68,6 +89,17 @@ public class PageVBoxHandler {
         newStage.setScene(scene);
         newStage.getIcons().add(applicationIconLocation);
         newStage.show();
+    }
+
+    public static void openNewStageAndSceneWithDefinedScreenSize(Stage openStage, VBox layoutVBoxContainer, String sceneTitle, double screenWidth, double screenHeight) {
+        Pane layout = new Pane(layoutVBoxContainer);
+        Scene scene = new Scene(layout, screenWidth, screenHeight);
+        Stage workingStage = openStage;
+        workingStage.setResizable(false);
+        workingStage.setTitle(sceneTitle);
+        workingStage.setScene(scene);
+        workingStage.getIcons().add(applicationIconLocation);
+        workingStage.show();
     }
 
     public static VBox setupHomePage() throws IOException, net.lingala.zip4j.exception.ZipException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
@@ -168,7 +200,7 @@ public class PageVBoxHandler {
         selectTestingTypeComboBox = new ComboBox();
         utilQuestionHandler.getListOfISTQBTypeReadFromData().stream()
                 .map(e -> selectTestingTypeComboBox.getItems().add(e)).collect(Collectors.toList());
-        selectTestingTypeComboBox.setStyle("-fx-font-size: 16");
+        selectTestingTypeComboBox.setStyle(fontStyle16);
         selectTestingTypeComboBox.setOnAction(event -> {
             setQuestionGroupName((String) selectTestingTypeComboBox.getValue());
             updateISTQBTypeInformation(getQuestionGroupName());
@@ -464,7 +496,7 @@ public class PageVBoxHandler {
     }
 
     public static VBox setupLayoutPageExam() throws IOException, ZipException {
-        if(!isReviewAnswers) {
+        if (!isReviewAnswers) {
             //Read and assign all questions data to questionHandler
             utilQuestionHandler.readQuestionZipFile(getQuestionFileName(), getZipFilePassword());
             utilQuestionHandler.mapDataInQuestionFileToDataModelByGroupName();
@@ -475,6 +507,8 @@ public class PageVBoxHandler {
 
         //Set up Timer header
         Label timerValue = new Label();
+        Button previewQuestion = new Button("_____Preview___");
+        previewQuestion.setFont(toolFont);
         timerValue.setFont(toolFont);
         ProgressBar timerProgressBar = new ProgressBar();
         timerProgressBar.setPrefWidth(screenWidth * 0.87);
@@ -482,7 +516,7 @@ public class PageVBoxHandler {
         timerProgressBar.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
         final int[] seconds = {getTestingMinutes() * 60};
         int totalSeconds = seconds[0];
-        if (!isReviewAnswers){
+        if (!isReviewAnswers) {
             setTimerTimeLine(new Timeline(new KeyFrame(Duration.seconds(1), ev -> {
                 timerValue.setText("Time left " + calculateTimeLeft(seconds));
                 seconds[0]--;
@@ -496,10 +530,17 @@ public class PageVBoxHandler {
                     AlertDisplay.displayTimingAlert("Time's up!", "All questions are unable to change!");
                 }
             })));
-        getTimerTimeLine().setCycleCount(Animation.INDEFINITE);
-        getTimerTimeLine().play();
-        }else{
-            timerValue.setText("Reviewing Results");
+            getTimerTimeLine().setCycleCount(Animation.INDEFINITE);
+            getTimerTimeLine().play();
+        } else {
+            timerValue.setText("Time left 00:00");
+            if (isQuestionDesign) {
+                timerValue.setVisible(false);
+                previewQuestion.setVisible(true);
+            } else {
+                timerValue.setVisible(true);
+                previewQuestion.setVisible(false);
+            }
             timerProgressBar.setProgress(1);
             isTestingEnd = true;
         }
@@ -507,12 +548,33 @@ public class PageVBoxHandler {
         HBox timerArea = new HBox();
         HBox.setMargin(timerValue, new Insets(5, 5, 5, 5));
         HBox.setMargin(timerProgressBar, new Insets(15, 15, 15, 15));
-        timerArea.getChildren().add(timerValue);
+        if (isQuestionDesign) {
+            timerArea.getChildren().add(previewQuestion);
+        } else {
+            timerArea.getChildren().add(timerValue);
+        }
         timerArea.getChildren().add(timerProgressBar);
 
+        previewQuestion.setOnAction(event -> {
+            try {
+                isReviewAnswers = true;
+                isQuestionDesign = true;
+                changeStageAndScene(event, setupLayoutPageExam(), "Exam Page Preview of: " + QuestionDesigner.getSelectedGroupNameValue());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        previewQuestionButton = previewQuestion;
+
         //Set up Pagination question pages
-        pagination = new Pagination(getNumberOfQuestionsPerQuestionBank());
-        pagination.setMaxPageIndicatorCount(getNumberOfQuestionsPerQuestionBank());
+        if (isQuestionDesign) {
+            pagination = new Pagination(1);
+            setCurrentQuestionPreviewIndex(questionIndex);
+            pagination.setMaxPageIndicatorCount(1);
+        } else {
+            pagination = new Pagination(getNumberOfQuestionsPerQuestionBank());
+            pagination.setMaxPageIndicatorCount(getNumberOfQuestionsPerQuestionBank());
+        }
         pagination.getStyleClass().add(Pagination.STYLE_CLASS_BULLET);
         pagination.setPageFactory(TestingToolUtils::getQuestionPages);
         pagination.setMaxPageIndicatorCount(maxQuestionPerPagination);
@@ -586,6 +648,7 @@ public class PageVBoxHandler {
         reviewAnswerButton.setOnAction(event -> {
             try {
                 isTestingEnd = false;
+                isQuestionDesign = false;
                 isReviewAnswers = true;
                 changeStageAndScene(event, setupLayoutPageExam()
                         , "Answers Review Page of: " + selectTestingTypeComboBox.getValue());
@@ -764,5 +827,407 @@ public class PageVBoxHandler {
         resultVBox.getChildren().add(layoutHBox);
 
         return resultVBox;
+    }
+
+    public static VBox setupQuestionDesignerPage() {
+        utilQuestionHandler = initQuestionHandler();
+        QuestionDesigner questionDesigner = new QuestionDesigner();
+        VBox resultVBox = questionDesigner.generateElements();
+
+        questionDesigner.saveChangesQuestion.setOnAction(event -> {
+            QuestionDataModel[] writtingQuestions = utilQuestionHandler.getquestionDataModels();
+            String separator = "|";
+            StringBuilder lineBuilder = new StringBuilder();
+            for (int i = 0; i < maxQuestionIndex; i++) {
+                if (i == 0) {
+                    lineBuilder.append(separator).append(utilQuestionHandler.getFullListOfISTQBTypeReadFromData().get(i))
+                            .append(separator).append(writtingQuestions[i].questionTitle1)
+                            .append(separator).append(writtingQuestions[i].questionTitle2)
+                            .append(separator).append(writtingQuestions[i].questionTitle3)
+                            .append(separator).append(writtingQuestions[i].questionTitle4)
+                            .append(separator).append(writtingQuestions[i].questionTitle5)
+                            .append(separator).append(writtingQuestions[i].questionTitle6)
+                            .append(separator).append(writtingQuestions[i].questionTitle7)
+                            .append(separator).append(writtingQuestions[i].questionTitle8)
+                            .append(separator).append(writtingQuestions[i].questionTitle9)
+                            .append(separator).append(writtingQuestions[i].questionTitle10)
+                            .append(separator).append(isMultiHeaderText)
+                            .append(separator).append(isAnswer1CorrectHeaderText)
+                            .append(separator).append(writtingQuestions[i].questionAnswer1)
+                            .append(separator).append(isAnswer2CorrectHeaderText)
+                            .append(separator).append(writtingQuestions[i].questionAnswer2)
+                            .append(separator).append(isAnswer3CorrectHeaderText)
+                            .append(separator).append(writtingQuestions[i].questionAnswer3)
+                            .append(separator).append(isAnswer4CorrectHeaderText)
+                            .append(separator).append(writtingQuestions[i].questionAnswer4)
+                            .append(separator).append(isAnswer5CorrectHeaderText)
+                            .append(separator).append(writtingQuestions[i].questionAnswer5)
+                            .append(separator).append(isAnswer6CorrectHeaderText)
+                            .append(separator).append(writtingQuestions[i].questionAnswer6)
+                            .append(separator).append(isAnswer7CorrectHeaderText)
+                            .append(separator).append(writtingQuestions[i].questionAnswer7)
+                            .append(separator).append(isAnswer8CorrectHeaderText)
+                            .append(separator).append(writtingQuestions[i].questionAnswer8)
+                            .append(separator).append(isAnswer9CorrectHeaderText)
+                            .append(separator).append(writtingQuestions[i].questionAnswer9)
+                            .append(separator).append(isAnswer10CorrectHeaderText)
+                            .append(separator).append(writtingQuestions[i].questionAnswer10).append(separator).append(System.lineSeparator());
+                } else {
+                    lineBuilder.append(separator).append(utilQuestionHandler.getFullListOfISTQBTypeReadFromData().get(i))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionTitle1))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionTitle2))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionTitle3))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionTitle4))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionTitle5))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionTitle6))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionTitle7))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionTitle8))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionTitle9))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionTitle10))
+                            .append(separator).append(utilQuestionHandler.convertBooleanToSaveFormat(writtingQuestions[i].isMultipleChoice))
+                            .append(separator).append(utilQuestionHandler.convertBooleanToSaveFormat(writtingQuestions[i].isQuestionAnswer1Correct))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionAnswer1))
+                            .append(separator).append(utilQuestionHandler.convertBooleanToSaveFormat(writtingQuestions[i].isQuestionAnswer2Correct))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionAnswer2))
+                            .append(separator).append(utilQuestionHandler.convertBooleanToSaveFormat(writtingQuestions[i].isQuestionAnswer3Correct))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionAnswer3))
+                            .append(separator).append(utilQuestionHandler.convertBooleanToSaveFormat(writtingQuestions[i].isQuestionAnswer4Correct))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionAnswer4))
+                            .append(separator).append(utilQuestionHandler.convertBooleanToSaveFormat(writtingQuestions[i].isQuestionAnswer5Correct))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionAnswer5))
+                            .append(separator).append(utilQuestionHandler.convertBooleanToSaveFormat(writtingQuestions[i].isQuestionAnswer6Correct))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionAnswer6))
+                            .append(separator).append(utilQuestionHandler.convertBooleanToSaveFormat(writtingQuestions[i].isQuestionAnswer7Correct))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionAnswer7))
+                            .append(separator).append(utilQuestionHandler.convertBooleanToSaveFormat(writtingQuestions[i].isQuestionAnswer8Correct))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionAnswer8))
+                            .append(separator).append(utilQuestionHandler.convertBooleanToSaveFormat(writtingQuestions[i].isQuestionAnswer9Correct))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionAnswer9))
+                            .append(separator).append(utilQuestionHandler.convertBooleanToSaveFormat(writtingQuestions[i].isQuestionAnswer10Correct))
+                            .append(separator).append(getAllCharsInString(writtingQuestions[i].questionAnswer10)).append(separator).append(System.lineSeparator());
+                }
+            }
+            try {
+                String textToWrite = convertEnterCharacterToSave(String.valueOf(lineBuilder));
+                writeDataToTextFile(questionBank, textToWrite);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        questionDesigner.openFileButton.setOnAction(event -> {
+            try {
+                fileChooser.setInitialDirectory(new File(getCurrentPath()));
+                imagesFolder = new File(getCurrentPath() + "\\Images");
+                imageFolderAbsolutePath = imagesFolder.getAbsolutePath();
+            } catch (IOException ignored) {
+            }
+            questionBank = new File("");
+            questionBank = fileChooser.showOpenDialog(null);
+            questionIndex = 1;
+            questionDesigner.getQuestionBankFileName().setText(questionBank.getName());
+            utilQuestionHandler.readAndMapQuestionDataFromFileToDataObject(questionBank);
+            maxQuestionIndex = utilQuestionHandler.getquestionDataModels().length;
+            questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler, questionIndex);
+            utilQuestionHandler.getListOfISTQBTypeReadFromData().stream()
+                    .map(e -> questionDesigner.checkBoxGroup.getItems().add(e)).collect(Collectors.toList());
+            questionDesigner.checkBoxGroup.setStyle(fontStyle16);
+            try {
+                isReviewAnswers = true;
+                isQuestionDesign = true;
+                isQuestionTempCheck = false;
+                openNewStageAndScene(setupLayoutPageExam(), "Exam Page Preview of: " + QuestionDesigner.getSelectedGroupNameValue());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            newStage.setOnCloseRequest(event1 -> {
+                newStage = null;
+            });
+        });
+
+        questionDesigner.applyTempChange.setOnAction(event -> {
+            if (getTemporaryChangeQuestion() != null) {
+                try {
+                    utilQuestionHandler.getquestionDataModels()[questionIndex] = checkIfTitlesHasNewImageThenSaveToImagesFolder(getTemporaryChangeQuestion());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                QuestionHandler.fullListOfISTQBTypeReadFromData.set(questionIndex, selectedGroupName.getText());
+                int newListCount = QuestionHandler.fullListOfISTQBTypeReadFromData.size();
+                maxQuestionIndex = (newListCount == maxQuestionIndex) ? maxQuestionIndex : newListCount;
+                questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler, questionIndex);
+                updatePreviewPage();
+            }
+        });
+
+        questionDesigner.checkTempChange.setOnAction(event -> {
+            QuestionDataModel tempChanges = new QuestionDataModel();
+            tempChanges.questionTitle1 = convertEnterCharacterToReview(questionDesigner.textArea1.getText());
+            tempChanges.questionTitle2 = convertEnterCharacterToReview(questionDesigner.textArea2.getText());
+            tempChanges.questionTitle3 = convertEnterCharacterToReview(questionDesigner.textArea3.getText());
+            tempChanges.questionTitle4 = convertEnterCharacterToReview(questionDesigner.textArea4.getText());
+            tempChanges.questionTitle5 = convertEnterCharacterToReview(questionDesigner.textArea5.getText());
+            tempChanges.questionTitle6 = convertEnterCharacterToReview(questionDesigner.textArea6.getText());
+            tempChanges.questionTitle7 = convertEnterCharacterToReview(questionDesigner.textArea7.getText());
+            tempChanges.questionTitle8 = convertEnterCharacterToReview(questionDesigner.textArea8.getText());
+            tempChanges.questionTitle9 = convertEnterCharacterToReview(questionDesigner.textArea9.getText());
+            tempChanges.questionTitle10 = convertEnterCharacterToReview(questionDesigner.textArea10.getText());
+            tempChanges.isMultipleChoice = questionDesigner.isMultiAnswersCheckbox.isSelected();
+            tempChanges.questionAnswer1 = convertEnterCharacterToReview(questionDesigner.textAreaAnswer1.getText());
+            tempChanges.isQuestionAnswer1Correct = questionDesigner.isAnswer1Correct.isSelected();
+            tempChanges.questionAnswer2 = convertEnterCharacterToReview(questionDesigner.textAreaAnswer2.getText());
+            tempChanges.isQuestionAnswer2Correct = questionDesigner.isAnswer2Correct.isSelected();
+            tempChanges.questionAnswer3 = convertEnterCharacterToReview(questionDesigner.textAreaAnswer3.getText());
+            tempChanges.isQuestionAnswer3Correct = questionDesigner.isAnswer3Correct.isSelected();
+            tempChanges.questionAnswer4 = convertEnterCharacterToReview(questionDesigner.textAreaAnswer4.getText());
+            tempChanges.isQuestionAnswer4Correct = questionDesigner.isAnswer4Correct.isSelected();
+            tempChanges.questionAnswer5 = convertEnterCharacterToReview(questionDesigner.textAreaAnswer5.getText());
+            tempChanges.isQuestionAnswer5Correct = questionDesigner.isAnswer5Correct.isSelected();
+            tempChanges.questionAnswer6 = convertEnterCharacterToReview(questionDesigner.textAreaAnswer6.getText());
+            tempChanges.isQuestionAnswer6Correct = questionDesigner.isAnswer6Correct.isSelected();
+            tempChanges.questionAnswer7 = convertEnterCharacterToReview(questionDesigner.textAreaAnswer7.getText());
+            tempChanges.isQuestionAnswer7Correct = questionDesigner.isAnswer7Correct.isSelected();
+            tempChanges.questionAnswer8 = convertEnterCharacterToReview(questionDesigner.textAreaAnswer8.getText());
+            tempChanges.isQuestionAnswer8Correct = questionDesigner.isAnswer8Correct.isSelected();
+            tempChanges.questionAnswer9 = convertEnterCharacterToReview(questionDesigner.textAreaAnswer9.getText());
+            tempChanges.isQuestionAnswer9Correct = questionDesigner.isAnswer9Correct.isSelected();
+            tempChanges.questionAnswer10 = convertEnterCharacterToReview(questionDesigner.textAreaAnswer10.getText());
+            tempChanges.isQuestionAnswer10Correct = questionDesigner.isAnswer10Correct.isSelected();
+            setTemporaryChangeQuestion(tempChanges);
+            isReviewAnswers = true;
+            isQuestionDesign = true;
+            isQuestionTempCheck = true;
+            if (newStage == null) {
+                try {
+                    newStage = new Stage();
+                    openNewStageAndScene(setupLayoutPageExam(), "Exam Page Preview of: " + QuestionDesigner.getSelectedGroupNameValue());
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                newStage.setOnCloseRequest(event1 -> {
+                    newStage = null;
+                });
+            } else {
+                updatePreviewPage();
+            }
+        });
+
+        questionDesigner.questionIndexTextField.setOnKeyReleased(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                questionIndex = Integer.parseInt(questionDesigner.questionIndexTextField.getText());
+                questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler, questionIndex);
+                isQuestionTempCheck = false;
+                updatePreviewPage();
+            }
+        });
+
+        questionDesigner.nextQuestion.setOnAction((event -> {
+            if (questionIndex < maxQuestionIndex - 1) {
+                questionIndex++;
+                questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler, questionIndex);
+                isQuestionTempCheck = false;
+                updatePreviewPage();
+            }
+        }));
+
+        questionDesigner.prevQuestion.setOnAction((event -> {
+            if (questionIndex > 1) {
+                questionIndex--;
+                questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler, questionIndex);
+                isQuestionTempCheck = false;
+                updatePreviewPage();
+            }
+        }));
+
+        questionDesigner.firstQuestion.setOnAction((event -> {
+            if (questionIndex >= 1) {
+                questionIndex = 1;
+                questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler, questionIndex);
+                isQuestionTempCheck = false;
+                updatePreviewPage();
+            }
+        }));
+
+        questionDesigner.lastQuestion.setOnAction((event -> {
+            if (questionIndex < maxQuestionIndex - 1) {
+                questionIndex = maxQuestionIndex - 1;
+                questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler, questionIndex);
+                isQuestionTempCheck = false;
+                updatePreviewPage();
+            }
+        }));
+
+        questionDesigner.addQuestion.setOnAction(event -> {
+            questionIndex = maxQuestionIndex;
+            utilQuestionHandler.addNewQuestionToModel();
+            questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler, questionIndex);
+            isQuestionTempCheck = false;
+            updatePreviewPage();
+        });
+
+        return resultVBox;
+    }
+
+    public static VBox setupTableDesignerForTextArea(TextArea workingTextArea) {
+        Label tableRowNo = new Label("Row");
+        Label tableColNo = new Label("Column");
+        Button createTableBT = new Button("Create Table");
+        HBox commandBox = new HBox();
+        commandBox.setAlignment(Pos.CENTER);
+        commandBox.setPrefWidth(screenWidth / 1.5);
+        commandBox.getChildren().add(tableRowNo);
+        commandBox.getChildren().add(tableRowTF);
+        commandBox.getChildren().add(tableColNo);
+        commandBox.getChildren().add(tableColTF);
+        commandBox.getChildren().add(createTableBT);
+
+        String headerText = "[TableHeader]";
+        String rowText = "[TableRow]";
+        tableGridPane = new GridPane();
+        String textAreaContent = workingTextArea.getText();
+        if (textAreaContent.startsWith(headerText)) {
+            String[] tableRowData = textAreaContent.split("(\\[TableRow\\])");
+            displayTableGridPaneWithData(tableRowTF, tableColTF, tableRowData);
+        }
+
+        createTableBT.setOnAction(event -> {
+            tableGridPane = new GridPane();
+            displayTableGridPane(tableRowTF, tableColTF);
+            tableScrollPane.setContent(tableGridPane);
+        });
+
+        Button insertTableBT = new Button("Insert Table and Close");
+        previewTable.setStyle(cssGreenColorBGValue);
+        HBox bottomCommandBox = new HBox();
+        bottomCommandBox.setAlignment(Pos.CENTER);
+        bottomCommandBox.setBackground(grayBackGround);
+        bottomCommandBox.getChildren().add(insertTableBT);
+        bottomCommandBox.getChildren().add(previewTable);
+
+        insertTableBT.setOnAction(event -> {
+            workingTextArea.setText(getGeneratedTableContent());
+            popUpStage.close();
+            popUpTablePreviewStage.close();
+        });
+
+        popUpStage.setOnCloseRequest(event -> {
+            popUpTablePreviewStage.close();
+        });
+
+        previewTable.setOnAction(event -> {
+            openNewStageAndSceneWithDefinedScreenSize(popUpTablePreviewStage, setupTablePreviewVBox(), "Table Preview", screenWidth / 1.5, screenHeight / 1.5);
+        });
+        tableScrollPane = new ScrollPane();
+        tableScrollPane.setStyle(fontStyle16);
+        tableScrollPane.setBackground(grayBackGround);
+        tableScrollPane.setMaxWidth(screenWidth / 1.5);
+        tableScrollPane.setPrefHeight(screenHeight / 1.5);
+        tableScrollPane.setContent(tableGridPane);
+
+        VBox layoutTableDesigner = new VBox();
+        layoutTableDesigner.setBackground(grayBackGround);
+        layoutTableDesigner.setPrefHeight(screenHeight / 1.5);
+        layoutTableDesigner.getChildren().add(commandBox);
+        layoutTableDesigner.getChildren().add(tableScrollPane);
+        layoutTableDesigner.getChildren().add(bottomCommandBox);
+
+        VBox resultVBox = new VBox();
+        resultVBox.getChildren().add(layoutTableDesigner);
+
+        return resultVBox;
+    }
+
+    private static void displayTableGridPane(TextField tableRowTF, TextField tableColTF) {
+        if (!tableRowTF.getText().isEmpty() && !tableColTF.getText().isEmpty()) {
+            int rowNo = Integer.parseInt(tableRowTF.getText());
+            int colNo = Integer.parseInt(tableColTF.getText()) + 1;
+            generateTextFieldsInTableDesign(rowNo, colNo, null);
+        }
+    }
+
+    private static void generateTextFieldsInTableDesign(int rowNo, int colNo, String[][] data) {
+        for (int row = 0; row < rowNo; row++) {
+            TextField cellTF = null;
+            for (int col = 0; col < colNo; col++) {
+                if (col == 0) {
+                    if ((row == 0)) {
+                        tableGridPane.add(new Label("[Header]"), col, row);
+                    } else {
+                        tableGridPane.add(new Label("[TableRow]"), col, row);
+                    }
+                } else {
+                    if (data == null) {
+                        cellTF = new TextField("row" + row + "col" + col);
+                    } else {
+                        try {
+                            cellTF = new TextField(data[row][col]);
+                        } catch (ArrayIndexOutOfBoundsException e) {
+                            cellTF = new TextField("");
+                        }
+                    }
+                    cellTF.setPrefWidth(100);
+                    tableGridPane.add(cellTF, col, row);
+                }
+            }
+        }
+    }
+
+    public static void displayTableGridPaneWithData(TextField tableRowTF, TextField tableColTF, String[] tableRowData) {
+        int maxRow = tableRowData.length;
+        int maxCol = 0;
+        String[][] tableRowSplitedData = new String[maxRow][];
+        for (int row = 0; row < maxRow; row++) {
+            if (row == 0) {
+                tableRowSplitedData[row] = tableRowData[row].replace("[TableHeader]", "#").split("#");
+            } else {
+                tableRowData[row] = "#" + tableRowData[row];
+                tableRowSplitedData[row] = tableRowData[row].split("#");
+            }
+            if (maxCol < tableRowSplitedData[row].length) {
+                maxCol = tableRowSplitedData[row].length;
+            }
+        }
+        tableRowTF.setText(String.valueOf(maxRow));
+        tableColTF.setText(String.valueOf(maxCol - 1));
+        generateTextFieldsInTableDesign(maxRow, maxCol, tableRowSplitedData);
+    }
+
+    public static VBox setupTablePreviewVBox() {
+        GridPane tableContent = renderGridPaneWithDataGridTable(tableGridPane);
+        tableContent.setGridLinesVisible(true);
+
+        tablePreviewScrollPane.setStyle(fontStyle16);
+        tablePreviewScrollPane.setBackground(grayBackGround);
+        tablePreviewScrollPane.setMaxWidth(screenWidth / 1.5);
+        tablePreviewScrollPane.setPrefHeight(screenHeight / 1.5);
+        tablePreviewScrollPane.setContent(tableContent);
+
+        VBox previewTable = new VBox();
+        previewTable.setBackground(grayBackGround);
+        previewTable.setPrefHeight(screenHeight / 1.5);
+        previewTable.getChildren().add(tablePreviewScrollPane);
+
+        VBox resultVBox = new VBox();
+        resultVBox.getChildren().add(previewTable);
+
+        return resultVBox;
+    }
+
+    private static QuestionDataModel checkIfTitlesHasNewImageThenSaveToImagesFolder(QuestionDataModel temporaryChangeQuestion) throws IOException {
+        temporaryChangeQuestion.questionTitle1 = (temporaryChangeQuestion.questionTitle1.matches("<InsertingImage>.+")) ? updateNewImageNameAndSaveToImageFolderInTitle(temporaryChangeQuestion.questionTitle1) : temporaryChangeQuestion.questionTitle1;
+        temporaryChangeQuestion.questionTitle2 = (temporaryChangeQuestion.questionTitle2.matches("<InsertingImage>.+")) ? updateNewImageNameAndSaveToImageFolderInTitle(temporaryChangeQuestion.questionTitle2) : temporaryChangeQuestion.questionTitle2;
+        temporaryChangeQuestion.questionTitle3 = (temporaryChangeQuestion.questionTitle3.matches("<InsertingImage>.+")) ? updateNewImageNameAndSaveToImageFolderInTitle(temporaryChangeQuestion.questionTitle3) : temporaryChangeQuestion.questionTitle3;
+        temporaryChangeQuestion.questionTitle4 = (temporaryChangeQuestion.questionTitle4.matches("<InsertingImage>.+")) ? updateNewImageNameAndSaveToImageFolderInTitle(temporaryChangeQuestion.questionTitle4) : temporaryChangeQuestion.questionTitle4;
+        temporaryChangeQuestion.questionTitle5 = (temporaryChangeQuestion.questionTitle5.matches("<InsertingImage>.+")) ? updateNewImageNameAndSaveToImageFolderInTitle(temporaryChangeQuestion.questionTitle5) : temporaryChangeQuestion.questionTitle5;
+        temporaryChangeQuestion.questionTitle6 = (temporaryChangeQuestion.questionTitle6.matches("<InsertingImage>.+")) ? updateNewImageNameAndSaveToImageFolderInTitle(temporaryChangeQuestion.questionTitle6) : temporaryChangeQuestion.questionTitle6;
+        temporaryChangeQuestion.questionTitle7 = (temporaryChangeQuestion.questionTitle7.matches("<InsertingImage>.+")) ? updateNewImageNameAndSaveToImageFolderInTitle(temporaryChangeQuestion.questionTitle7) : temporaryChangeQuestion.questionTitle7;
+        temporaryChangeQuestion.questionTitle8 = (temporaryChangeQuestion.questionTitle8.matches("<InsertingImage>.+")) ? updateNewImageNameAndSaveToImageFolderInTitle(temporaryChangeQuestion.questionTitle8) : temporaryChangeQuestion.questionTitle8;
+        temporaryChangeQuestion.questionTitle9 = (temporaryChangeQuestion.questionTitle9.matches("<InsertingImage>.+")) ? updateNewImageNameAndSaveToImageFolderInTitle(temporaryChangeQuestion.questionTitle9) : temporaryChangeQuestion.questionTitle9;
+        temporaryChangeQuestion.questionTitle10 = (temporaryChangeQuestion.questionTitle10.matches("<InsertingImage>.+")) ? updateNewImageNameAndSaveToImageFolderInTitle(temporaryChangeQuestion.questionTitle10) : temporaryChangeQuestion.questionTitle10;
+        return temporaryChangeQuestion;
+    }
+
+    private static void updatePreviewPage() {
+        previewQuestionButton.fire();
     }
 }
