@@ -559,7 +559,7 @@ public class PageVBoxHandler {
             try {
                 isReviewAnswers = true;
                 isQuestionDesign = true;
-                changeStageAndScene(event, setupLayoutPageExam(), "Exam Page Preview");
+                changeStageAndScene(event, setupLayoutPageExam(), "Exam Page Preview of: " + QuestionDesigner.getSelectedGroupNameValue());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -568,7 +568,7 @@ public class PageVBoxHandler {
 
         //Set up Pagination question pages
         if (isQuestionDesign) {
-            pagination = new Pagination(questionIndex);
+            pagination = new Pagination(1);
             setCurrentQuestionPreviewIndex(questionIndex);
             pagination.setMaxPageIndicatorCount(1);
         } else {
@@ -936,7 +936,7 @@ public class PageVBoxHandler {
                 isReviewAnswers = true;
                 isQuestionDesign = true;
                 isQuestionTempCheck = false;
-                openNewStageAndScene(setupLayoutPageExam(), "Exam Page Preview");
+                openNewStageAndScene(setupLayoutPageExam(), "Exam Page Preview of: " + QuestionDesigner.getSelectedGroupNameValue());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -952,6 +952,9 @@ public class PageVBoxHandler {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
+                QuestionHandler.fullListOfISTQBTypeReadFromData.set(questionIndex, selectedGroupName.getText());
+                int newListCount = QuestionHandler.fullListOfISTQBTypeReadFromData.size();
+                maxQuestionIndex = (newListCount == maxQuestionIndex) ? maxQuestionIndex : newListCount;
                 questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler, questionIndex);
                 updatePreviewPage();
             }
@@ -997,7 +1000,7 @@ public class PageVBoxHandler {
             if (newStage == null) {
                 try {
                     newStage = new Stage();
-                    openNewStageAndScene(setupLayoutPageExam(), "Exam Page Preview");
+                    openNewStageAndScene(setupLayoutPageExam(), "Exam Page Preview of: " + QuestionDesigner.getSelectedGroupNameValue());
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -1053,6 +1056,14 @@ public class PageVBoxHandler {
                 updatePreviewPage();
             }
         }));
+
+        questionDesigner.addQuestion.setOnAction(event -> {
+            questionIndex = maxQuestionIndex;
+            utilQuestionHandler.addNewQuestionToModel();
+            questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler, questionIndex);
+            isQuestionTempCheck = false;
+            updatePreviewPage();
+        });
 
         return resultVBox;
     }

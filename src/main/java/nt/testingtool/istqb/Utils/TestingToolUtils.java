@@ -213,7 +213,7 @@ public class TestingToolUtils {
     private static void assignQuestionDataFromClassToTitleLabelOrImage() {
         String fileHeaderSymbol = "file:///";
         for (int i = 0; i < 10; i++) {
-            if (Objects.equals(questionStringTitle[i], "")) {
+            if (Objects.equals(questionStringTitle[i], "") || questionStringTitle[i] == null) {
                 break;
             } else if (questionStringTitle[i].contains("Images\\")) {
                 questionStringTitle[i] = questionStringTitle[i]

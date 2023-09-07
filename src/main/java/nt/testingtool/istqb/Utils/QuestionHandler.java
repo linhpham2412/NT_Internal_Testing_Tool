@@ -16,6 +16,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -78,7 +79,7 @@ public class QuestionHandler {
     public File imagesFolder;
     public boolean isFirstLoad = true;
     List<String> listOfISTQBTypeReadFromData = new ArrayList<>();
-    List<String> fullListOfISTQBTypeReadFromData = new ArrayList<>();
+    public static List<String> fullListOfISTQBTypeReadFromData = new ArrayList<>();
     private ZipFile zipFile;
     private QuestionBankDataModel questionBankDataModels;
     private QuestionDataModel[] questionDataModels;
@@ -247,6 +248,13 @@ public class QuestionHandler {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void addNewQuestionToModel(){
+        int lastQuestionIndex = questionDataModels.length;
+        questionDataModels = Arrays.copyOf(questionDataModels,lastQuestionIndex+1);
+        fullListOfISTQBTypeReadFromData.add("");
+        questionDataModels[lastQuestionIndex] = new QuestionDataModel();
     }
 
     private File switchDataZipFileName(String zipFileName) throws IOException, ZipException {

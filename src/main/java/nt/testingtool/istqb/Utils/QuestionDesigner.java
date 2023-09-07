@@ -1,6 +1,5 @@
 package nt.testingtool.istqb.Utils;
 
-import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -33,7 +32,7 @@ public class QuestionDesigner {
     Button firstQuestion = new Button("|<");
     Button lastQuestion = new Button(">|");
     Button addQuestion = new Button("+");
-    TextField selectedGroupName = new TextField();
+    static TextField selectedGroupName = new TextField();
     TextArea textArea1 = new TextArea();
     TextArea textArea2 = new TextArea();
     TextArea textArea3 = new TextArea();
@@ -65,9 +64,18 @@ public class QuestionDesigner {
     TextArea textAreaAnswer9 = new TextArea();
     CheckBox isAnswer10Correct = new CheckBox("Is Correct");
     TextArea textAreaAnswer10 = new TextArea();
-    ComboBox checkBoxGroup = new ComboBox();
+
+    public static String getCheckBoxGroupValue() {
+        return checkBoxGroup.getValue().toString();
+    }
+
+    static ComboBox checkBoxGroup = new ComboBox();
     Button saveChangesQuestion = new Button("Write Changes to File");
     Button applyGroupButton = new Button("<<");
+
+    public static String getSelectedGroupNameValue() {
+        return selectedGroupName.getText();
+    }
 
     public VBox generateElements() {
         Pane questionDesignerPaneHeader = new Pane();
@@ -171,6 +179,10 @@ public class QuestionDesigner {
         titleGroupHBox.getChildren().add(selectedGroupName);
         titleGroupHBox.getChildren().add(applyGroupButton);
         titleGroupHBox.getChildren().add(checkBoxGroup);
+
+        applyGroupButton.setOnAction(event -> {
+            selectedGroupName.setText(checkBoxGroup.getValue().toString());
+        });
 
         HBox questionBox = new HBox();
         Label questionLabel = new Label("Question area:");
@@ -455,13 +467,13 @@ public class QuestionDesigner {
         return resultVBox;
     }
 
-    private void triggerKeyEventForTextArea(javafx.scene.input.KeyEvent event){
+    private void triggerKeyEventForTextArea(javafx.scene.input.KeyEvent event) {
         if (event.getCode() == KeyCode.DIGIT1 && event.isControlDown()) {
             addEnterSymbolToTextArea((TextArea) event.getSource());
         } else if (event.getCode() == KeyCode.DIGIT2 && event.isControlDown()) {
             selectAndAddImageURLToTextArea((TextArea) event.getSource());
         } else if (event.getCode() == KeyCode.DIGIT3 && event.isControlDown()) {
-            PageVBoxHandler.openNewStageAndSceneWithDefinedScreenSize(PageVBoxHandler.popUpStage, PageVBoxHandler.setupTableDesignerForTextArea((TextArea) event.getSource()),"Table Designer", screenWidth/1.5,screenHeight/1.5);
+            PageVBoxHandler.openNewStageAndSceneWithDefinedScreenSize(PageVBoxHandler.popUpStage, PageVBoxHandler.setupTableDesignerForTextArea((TextArea) event.getSource()), "Table Designer", screenWidth / 1.5, screenHeight / 1.5);
         }
     }
 
@@ -474,11 +486,16 @@ public class QuestionDesigner {
         insertImageFile = fileChooser.showOpenDialog(null);
         String currentURL = insertImageFile.getAbsolutePath();
         int indexOfDot = currentURL.indexOf(".");
-        int lastIndexOfSlash = currentURL.lastIndexOf("\\")+1;
-        String imageExtension = currentURL.substring(indexOfDot,currentURL.length());
-        String imageName = currentURL.substring(lastIndexOfSlash,indexOfDot);
+        int lastIndexOfSlash = currentURL.lastIndexOf("\\") + 1;
+        String imageExtension = currentURL.substring(indexOfDot, currentURL.length());
+        String imageName = currentURL.substring(lastIndexOfSlash, indexOfDot);
         source.clear();
-        source.setText("<InsertingImage>"+currentURL+" => input name to save to Images Folder in here ["+imageName+"]"+imageExtension);
+        String currentURLOfSelectedImage = currentURL.substring(0,currentURL.lastIndexOf("\\"));
+        if (currentURLOfSelectedImage.equals(imageFolderAbsolutePath)) {
+            source.setText("Images\\\\" + imageName + imageExtension);
+        } else {
+            source.setText("<InsertingImage>" + currentURL + " => input name to save to Images Folder in here [" + imageName + "]" + imageExtension);
+        }
     }
 
 
@@ -564,16 +581,16 @@ public class QuestionDesigner {
     }
 
     public static String updateNewImageNameAndSaveToImageFolderInTitle(String titleContent) throws IOException {
-        titleContent = titleContent.replace("<InsertingImage>","");
-        String originalImageURL = titleContent.substring(0,titleContent.indexOf("=")).trim();
-        titleContent = titleContent.substring(titleContent.indexOf("["),titleContent.length());
+        titleContent = titleContent.replace("<InsertingImage>", "");
+        String originalImageURL = titleContent.substring(0, titleContent.indexOf("=")).trim();
+        titleContent = titleContent.substring(titleContent.indexOf("["), titleContent.length());
         String newName = titleContent
-                .replace("]","")
-                .replace("[","");
+                .replace("]", "")
+                .replace("[", "");
         File tobeCopyImage = new File(originalImageURL);
-        File destinationFile = new File(imageFolderAbsolutePath+"/"+newName);
-        copyFileToNewLocation(tobeCopyImage,destinationFile);
-        titleContent = "Images\\\\"+newName;
+        File destinationFile = new File(imageFolderAbsolutePath + "/" + newName);
+        copyFileToNewLocation(tobeCopyImage, destinationFile);
+        titleContent = "Images\\\\" + newName;
         return titleContent;
     }
 
