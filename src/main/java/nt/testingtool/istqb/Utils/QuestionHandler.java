@@ -16,7 +16,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -250,11 +249,24 @@ public class QuestionHandler {
         }
     }
 
-    public void addNewQuestionToModel(){
+    public void addNewQuestionToModel() {
         int lastQuestionIndex = questionDataModels.length;
-        questionDataModels = Arrays.copyOf(questionDataModels,lastQuestionIndex+1);
+        questionDataModels = Arrays.copyOf(questionDataModels, lastQuestionIndex + 1);
         fullListOfISTQBTypeReadFromData.add("");
         questionDataModels[lastQuestionIndex] = new QuestionDataModel();
+    }
+
+    public void deleteCurrentQuestionFromModel() {
+        int currentQuestionIndex = getCurrentQuestionPreviewIndex();
+        fullListOfISTQBTypeReadFromData.remove(currentQuestionIndex);
+        QuestionDataModel[] tempQuestionList = new QuestionDataModel[questionDataModels.length - 1];
+        for (int oldIndex = 0, newIndex = 0; oldIndex < questionDataModels.length; oldIndex++) {
+            if (oldIndex != currentQuestionIndex) {
+                tempQuestionList[newIndex++] = questionDataModels[oldIndex];
+            }
+        }
+        questionDataModels = Arrays.copyOf(questionDataModels, questionDataModels.length - 1);
+        questionDataModels = tempQuestionList;
     }
 
     private File switchDataZipFileName(String zipFileName) throws IOException, ZipException {
@@ -458,8 +470,8 @@ public class QuestionHandler {
         return columnData;
     }
 
-    private String convertAllEnterSymbolInTextToSpecialCharacter(String textToConvert){
-        return textToConvert.replaceAll("\\\\n","¶");
+    private String convertAllEnterSymbolInTextToSpecialCharacter(String textToConvert) {
+        return textToConvert.replaceAll("\\\\n", "¶");
     }
 
     private boolean convertDataToBoolean(String dataToConvert) {

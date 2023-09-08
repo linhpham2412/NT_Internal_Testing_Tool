@@ -74,6 +74,8 @@ public class ProjectConfiguration {
     public static Color redNTColor = Color.valueOf("#FA6070");
     public static Color darkBlueColor = Color.valueOf("#284977");
     public static String cssGreenColorBGValue = "-fx-background-color: #21EDD2;";
+    public static String cssRedColorBGValue = "-fx-background-color: #FA6070;";
+    public static String cssBlueColorBGValue = "-fx-background-color: #43B3E8;";
     public static boolean isReviewAnswers = false;
     public static String fontStyle16 = "-fx-font-size: 16";
 
