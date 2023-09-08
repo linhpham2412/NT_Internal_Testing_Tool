@@ -1065,6 +1065,17 @@ public class PageVBoxHandler {
             updatePreviewPage();
         });
 
+        questionDesigner.deleteQuestion.setOnAction(event -> {
+            utilQuestionHandler.deleteCurrentQuestionFromModel();
+            maxQuestionIndex -= 1;
+            if (questionIndex >= maxQuestionIndex) {
+                questionIndex = maxQuestionIndex - 1;
+            }
+            questionDesigner.displayQuestionDataInQuestionModelByIndex(utilQuestionHandler, questionIndex);
+            isQuestionTempCheck = false;
+            updatePreviewPage();
+        });
+
         return resultVBox;
     }
 
