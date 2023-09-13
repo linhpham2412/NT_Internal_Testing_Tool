@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.stream.Collectors;
@@ -1095,6 +1096,7 @@ public class PageVBoxHandler {
         String headerText = "[TableHeader]";
         String rowText = "[TableRow]";
         tableGridPane = new GridPane();
+        tableGridPane.autosize();
         String textAreaContent = workingTextArea.getText();
         if (textAreaContent.startsWith(headerText)) {
             String[] tableRowData = textAreaContent.split("(\\[TableRow\\])");

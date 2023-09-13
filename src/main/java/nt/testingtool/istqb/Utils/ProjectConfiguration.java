@@ -11,14 +11,8 @@ import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Objects;
 
 public class ProjectConfiguration {
     public static Font toolFont = new Font(24);
@@ -76,6 +70,7 @@ public class ProjectConfiguration {
     public static String cssGreenColorBGValue = "-fx-background-color: #21EDD2;";
     public static String cssRedColorBGValue = "-fx-background-color: #FA6070;";
     public static String cssBlueColorBGValue = "-fx-background-color: #43B3E8;";
+    public static String cssWhiteColorFontValue = "-fx-text-fill: white;-fx-font-family:Courier New;-fx-font-size: 10";
     public static boolean isReviewAnswers = false;
     public static String fontStyle16 = "-fx-font-size: 16";
 
