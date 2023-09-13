@@ -1,9 +1,6 @@
 package nt.testingtool.istqb.Utils;
 
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -68,6 +65,7 @@ public class QuestionHandler {
     static Label[] questionTitle;
     static javafx.scene.image.ImageView[] questionImage;
     static GridPane[] questionGridTable;
+    static ScrollPane[] questionScrollPane;
     static Object[] questionObjects;
     static CheckBox[] answerCheckBoxes;
     static RadioButton[] answerRadioButtons;
@@ -98,6 +96,7 @@ public class QuestionHandler {
         questionTitle = new Label[getMaxNumberOfAnswerElementsInQuestionBank()];
         questionImage = new ImageView[getMaxNumberOfAnswerElementsInQuestionBank()];
         questionGridTable = new GridPane[getMaxNumberOfAnswerElementsInQuestionBank()];
+        questionScrollPane = new ScrollPane[getMaxNumberOfAnswerElementsInQuestionBank()];
         questionObjects = new Object[getMaxNumberOfAnswerElementsInQuestionBank()];
         answerCheckBoxes = new CheckBox[getMaxNumberOfAnswerElementsInQuestionBank()];
         answerRadioButtons = new RadioButton[getMaxNumberOfAnswerElementsInQuestionBank()];

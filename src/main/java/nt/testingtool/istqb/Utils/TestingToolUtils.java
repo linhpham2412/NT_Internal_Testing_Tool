@@ -7,6 +7,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import nt.testingtool.istqb.datamodel.QuestionDataModel;
 
@@ -237,7 +238,14 @@ public class TestingToolUtils {
                 checkImageSizeAndResizeIfLongerThanScreenSize(getObjectWidthInScrollPane(), screenHeight / 2
                         , questionImage[i]);
                 questionObjects[i] = questionImage[i];
-            } else {
+            }else if (questionStringTitle[i].contains("<CodeBlock>")){
+                String codeSB = questionStringTitle[i].replace("<CodeBlock>","\t")+"\n\n";
+                codeSB = codeSB.replace("\r\n","\t\r\n\t");
+                Label codeContentLabel = new Label(codeSB);
+                codeContentLabel.setStyle(cssWhiteColorFontValue);
+                codeContentLabel.setBackground(new Background(new BackgroundFill(Color.BLACK,null,null)));
+                questionObjects[i] = codeContentLabel;
+            }else {
                 questionTitle[i] = new Label(questionStringTitle[i]);
                 questionTitle[i].setPrefWidth(getObjectWidthInScrollPane());
                 questionTitle[i].setWrapText(true);
